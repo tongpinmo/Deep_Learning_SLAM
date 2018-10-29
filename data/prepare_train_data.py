@@ -1,3 +1,6 @@
+#!/usr/bin/python27
+#coding:utf-8
+
 from __future__ import division
 import argparse
 import scipy.misc
@@ -14,5 +17,7 @@ parser.add_argument("--seq_length",type=int,default=3,help="length of each train
 parser.add_argument("--img_height",type=int,default=128,help="image height")
 parser.add_argument("--img_width",type=int,default=416,help="image width")
 parser.add_argument("--num_threads",type=int,default=4,help="number of threads to use")
-args=parser.parse_args()
+args = parser.parse_args()
+
+
 
