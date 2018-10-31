@@ -27,6 +27,7 @@ class SfMLearner(object):
         with tf.name_scope("data_loading"):
             tgt_image, src_image_stack, intrinsics = loader.load_train_batch()
             tgt_image = self.preprocess_image(tgt_image)
+            print('tgt_image:',tgt_image)
             src_image_stack = self.preprocess_image(src_image_stack)
 
         with tf.name_scope("depth_prediction"):
