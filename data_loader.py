@@ -42,7 +42,7 @@ class DataLoader(object):
         img_reader = tf.WholeFileReader() #reader
         _, image_contents = img_reader.read(image_paths_queue) #reader读取序列
         image_seq = tf.image.decode_jpeg(image_contents)       #解码，tensor
-        print ('image_seq_shape:=',image_seq.shape)
+        print ('image_seq:=',image_seq)
         tgt_image, src_image_stack = \
             self.unpack_image_sequence(
                 image_seq, self.img_height, self.img_width, self.num_source)
@@ -164,7 +164,7 @@ class DataLoader(object):
                                [0, 0, 0], 
                                [-1, int(img_width * (num_source//2)), -1])          #shape(?,416,?)
         # src_image_1 = tf.Print(src_image_1,[src_image_1.shape],message='src_image_1.shape')
-        print('src_image_1.shape',src_image_1.shape)
+        # print('src_image_1.shape',src_image_1.shape)
         # Source frames after the target frame
         src_image_2 = tf.slice(image_seq, 
                                [0, int(tgt_start_idx + img_width), 0], 
@@ -177,11 +177,11 @@ class DataLoader(object):
                                     [0, i*img_width, 0], 
                                     [-1, img_width, -1]) 
                                     for i in range(num_source)], axis=2)   #在axis=2 即color channels上concat
-        print('src_image_stack.shape',src_image_stack.shape)
+        # print('src_image_stack.shape',src_image_stack.shape)
         src_image_stack.set_shape([img_height,
                                    img_width, 
                                    num_source * 3])  # 此处乘以３是因为每张图片都是[image_height,image_width,3],在axis=2上连接，就是6,因此 shape(128,416,6)
-        print('src_image_stack.set_shape', src_image_stack.shape)
+        # print('src_image_stack.set_shape', src_image_stack.shape)     #(128,416,6)
         tgt_image.set_shape([img_height, img_width, 3])   #shape(128,416,3)
         return tgt_image, src_image_stack
 
