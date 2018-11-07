@@ -33,11 +33,14 @@ class SfMLearner(object):
                             opt.num_source,
                             opt.num_scales)
         with tf.name_scope("data_loading"):
-            tgt_image, src_image_stack, _ = loader.load_train_batch()
+            tgt_image, src_image_stack, intrinsics = loader.load_train_batch()
             tgt_image = self.preprocess_image(tgt_image)                        # [-1,1) 之间
             src_image_stack = self.preprocess_image(src_image_stack)            # [-1,1) 之间
             # tgt_image = tf.Print(tgt_image,[tgt_image],message= 'tgt_image')  #(4,128,416,3)
             # src_image_stack = tf.Print(src_image_stack, [src_image_stack], message='src_image_stack')     #(4,128,416,6)
+            # print('intrinsics:',intrinsics)                                   #shape(4,4,3,3)
+            # print('tgt_image.shape', tgt_image.shape)                           # shape(4,128,416,3)
+            # print('src_image_stack', src_image_stack.shape)                     # shape(4,128,416,6)
 
         with tf.name_scope("depth_prediction"):
 

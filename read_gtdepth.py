@@ -9,7 +9,6 @@ import tensorflow as tf
 img_height=128
 img_width=416
 
-# path ='/mnt/PI_Lab/users/zhaoyong/Dataset/NYU/NYUv1/Depth'
 path = 'raw_data_NYU/Depth'
 files = os.listdir(path)
 files = natsort.natsorted(files)
@@ -23,8 +22,11 @@ def getdepth():
         I = pil.open(fh)
         I = I.resize((img_width, img_height), pil.ANTIALIAS)
         I = np.array(I)
-        I = I[None,:,:,None]
+        I = I[:,:,None]
+        print('I:',I.shape)
         I = tf.convert_to_tensor(I,dtype=tf.float32)
+        I = tf.train.batch([I],batch_size=4)
+        print('I:', I.shape)
         print('the type of I ',I)
         pred_depth = I
 
@@ -33,7 +35,10 @@ def getdepth():
 
 
 
+
+
+
 if __name__ == '__main__':
-    pred_detpth = getdepth()
-    print('pre_depth:',pred_detpth.shape)
+    pred_depth = getdepth()
+    print('pre_depth:',pred_depth.shape)
 

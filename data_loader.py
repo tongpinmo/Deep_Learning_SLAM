@@ -42,13 +42,12 @@ class DataLoader(object):
         img_reader = tf.WholeFileReader() #reader
         _, image_contents = img_reader.read(image_paths_queue) #reader读取序列
         image_seq = tf.image.decode_jpeg(image_contents)       #解码，tensor
-        print ('image_seq:=',image_seq)
         tgt_image, src_image_stack = \
             self.unpack_image_sequence(
                 image_seq, self.img_height, self.img_width, self.num_source)
 
-        # print('tgt_image.shape',tgt_image.set_shape)          # shape=(4,128, 416, 3)
-        # print('src_image_stack',src_image_stack.shape)        # shape=(4,128, 416, 6)
+        # print('tgt_image.shape',tgt_image.shape)                # shape=(128, 416, 3)
+        # print('src_image_stack',src_image_stack.shape)          # shape=(128, 416, 6)
 
         # Load camera intrinsics
         cam_reader = tf.TextLineReader()  #从cam.txt中读取，每次读取一行，tf.decode_csv对每一行进行解析.
@@ -62,7 +61,7 @@ class DataLoader(object):
         # raw_cam_vec = tf.Print(raw_cam_vec,[raw_cam_vec],message='raw_cam_vec')       shape(9,)
         intrinsics = tf.reshape(raw_cam_vec, [3, 3])
         # intrinsics = tf.Print(intrinsics,[intrinsics],message='intrinsics before train.batch:')  #scale变换之后的  (3,3)
-
+        # print('intrinsics:',intrinsics)
 
         # Form training batches
         src_image_stack, tgt_image, intrinsics = \
@@ -70,6 +69,9 @@ class DataLoader(object):
                                batch_size=self.batch_size)
 
         # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics after train.batch:')
+        # print('intrinsics after train batch:', intrinsics.shape)        #shape(4,3,3)
+        # print('tgt_image.shape', tgt_image.shape)                       #shape(4,128,416,3)
+        # print('src_image_stack', src_image_stack.shape)                 #shape(4,128,416,6)
 
         # Data augmentation
         image_all = tf.concat([tgt_image, src_image_stack], axis=3)      #shape(4,128,416,9)
@@ -78,7 +80,9 @@ class DataLoader(object):
         # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics after augmentation:')   #shape(4,3,3)
         # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics.after:')
         tgt_image = image_all[:, :, :, :3]                               #shape(4,128,416,3)
+        # print('tgt_image.shape:',tgt_image.shape)
         src_image_stack = image_all[:, :, :, 3:]                         #shape(4,128,416,6)
+        # print('src_image_stack.shape:', src_image_stack.shape)
         intrinsics = self.get_multi_scale_intrinsics(                    #tensor shape(4,4,3,3)
             intrinsics, self.num_scales)
         # intrinsics = tf.Print(intrinsics,[intrinsics],message='intrinsics after get_multi_scale:')
