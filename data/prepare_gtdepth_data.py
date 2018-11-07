@@ -69,6 +69,20 @@ def main():
 
     Parallel(n_jobs=args.num_threads)(delayed(dump_example)(n) for n in range(data_loader.num_train))
 
+    # Split into depth
+    np.random.seed(8964)
+    folders = os.listdir(args.dump_root + 'Depth')
+    # print('subfolders:',folders)
+    # 路径/resulting /formatted /data/
+    with open(args.dump_root + 'depth.txt', 'w') as tf:
+
+        imfiles = glob(os.path.join(args.dump_root,'Depth','*.jpg'))
+        # print('imfiles:',imfiles)
+        frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
+        # print('frame_ids:',frame_ids)
+        for frame in frame_ids:
+            tf.write('%s %s\n' % ('Depth', frame))
+
 
 main()
 

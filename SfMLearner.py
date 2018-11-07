@@ -11,7 +11,7 @@ from data_loader import DataLoader
 from nets import *
 from utils import *
 import PIL.Image as pil
-from read_gtdepth import *
+from Getdepth import *
 img_height =128
 img_width =416
 
@@ -44,9 +44,10 @@ class SfMLearner(object):
 
         with tf.name_scope("depth_prediction"):
 
-            #todo  此处将groundtruth depth 读取进来
+            #todo  此处将groundtruth depth 读取进来,[ disp1:shape=[4,128,416,1];disp2:shape=[4,64,208,1];disp3:shape=[4,32,104,1];disp4:shape=[4,16,52,1] ];
 
-            pred_disp = getdepth()
+
+            pred_disp = Getdepth()
 
             pred_depth = [1./pred_disp]   # 逆深度
             # pred_depth = tf.Print(pred_depth,[pred_depth],message='pred_depth')

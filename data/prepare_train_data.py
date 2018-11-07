@@ -99,19 +99,17 @@ def main():
     # Split into train/val
     np.random.seed(8964)
     subfolders = os.listdir(args.dump_root)
+    # print('subfolders:',subfolders)
     # 路径/resulting /formatted /data/
     with open(args.dump_root + 'train.txt', 'w') as tf:
         with open(args.dump_root + 'val.txt', 'w') as vf:
-            for s in subfolders:
-                if not os.path.isdir(args.dump_root + '/%s' % s):
-                    continue
-                imfiles = glob(os.path.join(args.dump_root, s, '*.jpg'))
-                frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
-                for frame in frame_ids:
-                    if np.random.random() < 0.1:
-                        vf.write('%s %s\n' % (s, frame))
-                    else:
-                        tf.write('%s %s\n' % (s, frame))
+            imfiles = glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
+            frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
+            for frame in frame_ids:
+                if np.random.random() < 0.1:
+                    vf.write('%s %s\n' % ('Images', frame))
+                else:
+                    tf.write('%s %s\n' % ('Images', frame))
 
 main()
 
