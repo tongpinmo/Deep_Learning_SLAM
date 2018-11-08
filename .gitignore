@@ -4,3 +4,6 @@ checkpoints/
 venv/
 idea/
 .gitignore
+KITTI/
+KITTI_testing_Pose_output/
+
