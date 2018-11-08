@@ -2,4 +2,5 @@ raw_data_NYU/
 resulting/
 checkpoints/
 venv/
-
+idea/
+.gitignore

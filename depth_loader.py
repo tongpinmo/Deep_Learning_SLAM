@@ -5,15 +5,17 @@ import os
 import random
 import tensorflow as tf
 
+
 class DepthLoader(object):
     #_init_是python class中的构造函数,初始化实例的值
     def __init__(self,
-                 dataset_dir=None,
-                 batch_size=None,
-                 img_height=None,
-                 img_width=None,
-                 num_source=None,
-                 num_scales=None):
+                 dataset_dir='resulting/formatted/data/',
+                 batch_size = 4,
+                 img_height = 128,
+                 img_width  = 416,
+                 num_source = 2,
+                 num_scales = 4):
+
         self.dataset_dir = dataset_dir
         self.batch_size = batch_size
         self.img_height = img_height
@@ -26,8 +28,9 @@ class DepthLoader(object):
         """
         seed = random.randint(0, 2**31 - 1)  #integer creating in a particular scope
         # Load the list of training files into queues
+
         file_list = self.format_file_list(self.dataset_dir, 'depth') #读取resulting/formatted/data/Depth 下面的.jpg
-        print('file_list:',file_list)
+        # print('file_list:',file_list)
         image_paths_queue = tf.train.string_input_producer(
             file_list['image_file_list'],
             seed=seed,
@@ -43,41 +46,31 @@ class DepthLoader(object):
             self.unpack_image_sequence(
                 image_seq, self.img_height, self.img_width, self.num_source)
 
-        # print('tgt_image.shape',tgt_image.shape)                # shape=(???)
-        # print('src_image_stack',src_image_stack.shape)          # shape=(???)
+        # print('tgt_image.shape',tgt_image.shape)                # shape=(128,416,1)
+        # print('src_image_stack',src_image_stack.shape)          # shape=(128,416,2)
 
         # Form training batches
         src_image_stack, tgt_image = \
                 tf.train.batch([src_image_stack, tgt_image],
                                batch_size=self.batch_size)
 
-        # print('tgt_image.shape', tgt_image.shape)                       #shape()
-        # print('src_image_stack', src_image_stack.shape)                 #shape()
+        # print('tgt_image.shape', tgt_image.shape)                       #shape(4,128,416,1)
+        # print('src_image_stack', src_image_stack.shape)                 #shape(4,128,416,2)
 
         # Data augmentation
-        image_all = tf.concat([tgt_image, src_image_stack], axis=3)      #shape(4,128,416,9)
-        image_all, = self.data_augmentation(
+        image_all = tf.concat([tgt_image, src_image_stack], axis=3)      #shape(4,128,416,3)
+        # print('image_all:',image_all)
+        image_all = self.data_augmentation(
             image_all, self.img_height, self.img_width)
-        # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics after augmentation:')   #shape(4,3,3)
-        # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics.after:')
-        tgt_image = image_all[:, :, :, :3]                               #shape(4,128,416,3)
+        # print('image_all:',image_all)
+
+        tgt_image = image_all[:, :, :, :1]                               #shape(4,128,416,1)
         # print('tgt_image.shape:',tgt_image.shape)
-        src_image_stack = image_all[:, :, :, 3:]                         #shape(4,128,416,6)
+        src_image_stack = image_all[:, :, :, 1:]                         #shape(4,128,416,2)
         # print('src_image_stack.shape:', src_image_stack.shape)
 
 
         return tgt_image, src_image_stack
-#生成内参矩阵的函数
-    def make_intrinsics_matrix(self, fx, fy, cx, cy):
-        # Assumes batch input
-        batch_size = fx.get_shape().as_list()[0]
-        zeros = tf.zeros_like(fx)
-        r1 = tf.stack([fx, zeros, cx], axis=1)
-        r2 = tf.stack([zeros, fy, cy], axis=1)
-        r3 = tf.constant([0.,0.,1.], shape=[1, 3])
-        r3 = tf.tile(r3, [batch_size, 1])
-        intrinsics = tf.stack([r1, r2, r3], axis=1)
-        return intrinsics
 
     def data_augmentation(self, im, out_h, out_w):
         # Random scaling
@@ -91,7 +84,6 @@ class DepthLoader(object):
             im = tf.image.resize_area(im, [out_h, out_w])               #此处将image尺寸改变了
 
             return im
-
 
         # Random cropping　随机剪切
         def random_cropping(im, out_h, out_w):
@@ -107,10 +99,11 @@ class DepthLoader(object):
                 im, offset_y, offset_x, out_h, out_w) # FIXME:图像的裁剪,图像的左上角位于offset_height,offset_width,中心改变
 
             return im
-        im, intrinsics = random_scaling(im)
-        im, intrinsics = random_cropping(im, out_h, out_w)
-        im = tf.cast(im, dtype=tf.uint8)
+        im = random_scaling(im)
+        im = random_cropping(im, out_h, out_w)
+        im = tf.cast(im, dtype=tf.float32)
         return im
+
 #格式化数据,all_list 包括.jpg
     def format_file_list(self, data_root, split):
         with open(data_root + '/%s.txt' % split, 'r') as f: #一行一行地打开,目录应该在--dump_root=resulting/formatted/data/
@@ -152,9 +145,9 @@ class DepthLoader(object):
         # print('src_image_stack.shape',src_image_stack.shape)
         src_image_stack.set_shape([img_height,
                                    img_width,
-                                   num_source * 3])  # 此处乘以３是因为每张图片都是[image_height,image_width,3],在axis=2上连接，就是6,因此 shape(128,416,6)
+                                   num_source * 1])  # 此处乘以３是因为每张图片都是[image_height,image_width,1],在axis=2上连接，就是6,因此 shape(128,416,2)
         # print('src_image_stack.set_shape', src_image_stack.shape)     #(128,416,6)
-        tgt_image.set_shape([img_height, img_width, 3])   #shape(128,416,3)
+        tgt_image.set_shape([img_height, img_width, 1])   #shape(128,416,3)
         return tgt_image, src_image_stack
 
 #FIXME:
@@ -182,7 +175,5 @@ class DepthLoader(object):
 
 
 
-
-    # sfm = SfMLearner()
 
 

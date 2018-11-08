@@ -41,15 +41,17 @@ class SfMLearner(object):
 
         with tf.name_scope("depth_prediction"):
 
-            #todo  此处将groundtruth depth 读取进来,[ disp1:shape=[4,128,416,1];disp2:shape=[4,64,208,1];disp3:shape=[4,32,104,1];disp4:shape=[4,16,52,1] ];
+            #todo  此处将groundtruth depth 多个scale读取进来,
+            #todo [ disp1:shape=[4,128,416,1];disp2:shape=[4,64,208,1];disp3:shape=[4,32,104,1];disp4:shape=[4,16,52,1] ];
 
+            #Fix the groundtruth depth
 
             pred_disp = Getdepth()
             pred_disp = pred_disp.get_depth_graph()
 
             pred_depth = [1./pred_disp]   # 逆深度
             # pred_depth = tf.Print(pred_depth,[pred_depth],message='pred_depth')
-            # print('pred_depth:',pred_depth)
+            print('pred_depth:',pred_depth)
 
         with tf.name_scope("pose_and_explainability_prediction"):
             pred_poses, pred_exp_logits, pose_exp_net_endpoints = \
@@ -57,86 +59,83 @@ class SfMLearner(object):
                              src_image_stack, 
                              do_exp=(opt.explain_reg_weight > 0),
                              is_training=True)
-            # print('pred_poses.shape',pred_poses.shape)  (4,2,6)
+            print('pred_poses.shape',pred_poses.shape)  #(4,2,6)
             # pred_poses = tf.Print(pred_poses,[pred_poses],message='pred_poses')
             # print('pred_exp_logits:',pred_exp_logits)
 #loss function
         with tf.name_scope("compute_loss"):
             pixel_loss = 0
             exp_loss = 0
-            smooth_loss = 0
             tgt_image_all = []
             src_image_stack_all = []
             proj_image_stack_all = []
             proj_error_stack_all = []
             exp_mask_stack_all = []
-            for s in range(opt.num_scales):
+            #todo:only one scale
+            s = 0
+            if opt.explain_reg_weight > 0:
+                # Construct a reference explainability mask (i.e. all
+                # pixels are explainable)
+                ref_exp_mask = self.get_reference_explain_mask(s)
+                # print('ref_exp_mask:',ref_exp_mask)
+            # Scale the source and target images for computing loss at the
+            # according scale.
+            curr_tgt_image = tf.image.resize_area(tgt_image,
+                [int(opt.img_height/(2**s)), int(opt.img_width/(2**s))])   #1个scale
+            # print('curr_tgt_image:',curr_tgt_image)                     # (4, 128, 416, 3)
+            curr_src_image_stack = tf.image.resize_area(src_image_stack,
+                [int(opt.img_height/(2**s)), int(opt.img_width/(2**s))])
+            # print('curr_src_image_stack:', curr_src_image_stack)         # (4, 128, 416, 6)
+            for i in range(opt.num_source):                     #num_source=2
+                # Inverse warp the source image to the target image frame
+                curr_proj_image = projective_inverse_warp(     #FIXME：此处的输入要分 i ,scale ,因为多尺度
+                    curr_src_image_stack[:,:,:,3*i:3*(i+1)],                #shape(4,128,416,3)
+                    tf.squeeze(pred_depth[s], axis=3),                      #shape(4,128,416)
+                    pred_poses[:,i,:],                                      #pred_poses.shape(4,6)  #todo :要改为两帧的话可以从这里下手
+                    intrinsics[:,s,:,:])                                    #shape(4,4,3,3)
+                curr_proj_error = tf.abs(curr_proj_image - curr_tgt_image)  #投影光度误差
+                # Cross-entropy loss as regularization for the
+                # explainability prediction
                 if opt.explain_reg_weight > 0:
-                    # Construct a reference explainability mask (i.e. all 
-                    # pixels are explainable)
-                    ref_exp_mask = self.get_reference_explain_mask(s)
-                    # print('ref_exp_mask:',ref_exp_mask)
-                # Scale the source and target images for computing loss at the 
-                # according scale.
-                curr_tgt_image = tf.image.resize_area(tgt_image, 
-                    [int(opt.img_height/(2**s)), int(opt.img_width/(2**s))])   #FIXME：为什么要除以2**s,是每张图像相应缩放,对于不同的scale,对应的width,heigth也不同
-                curr_src_image_stack = tf.image.resize_area(src_image_stack, 
-                    [int(opt.img_height/(2**s)), int(opt.img_width/(2**s))])
 
-                if opt.smooth_weight > 0:
-                    smooth_loss += opt.smooth_weight/(2**s) * \
-                        self.compute_smooth_loss(pred_disp[s])    #FIXME：为什么要除以2**s,因为有不同的scale
+                    curr_exp_logits = tf.slice(pred_exp_logits[s],
+                                               [0, 0, 0, i*2], #从偶数个开始
+                                               [-1, -1, -1, 2])
+                    with tf.Session() as sess:
+                        test_curr_exp_logits=sess.run(curr_exp_logits)
+                        # print(test_curr_exp_logits)
 
-                for i in range(opt.num_source):                     #num_source=2
-                    # Inverse warp the source image to the target image frame
-                    curr_proj_image = projective_inverse_warp(     #FIXME：此处的输入要分 i ,scale ,因为多尺度
-                        curr_src_image_stack[:,:,:,3*i:3*(i+1)],                #shape(4,128,416,3)
-                        tf.squeeze(pred_depth[s], axis=3),                      #shape(4,128,416)
-                        pred_poses[:,i,:],                                      #pred_poses.shape(4,6)  #todo :要改为两帧的话可以从这里下手
-                        intrinsics[:,s,:,:])                                    #shape(4,4,3,3)
-                    curr_proj_error = tf.abs(curr_proj_image - curr_tgt_image)  #投影光度误差
-                    # Cross-entropy loss as regularization for the 
-                    # explainability prediction
+                    exp_loss += opt.explain_reg_weight * \
+                        self.compute_exp_reg_loss(curr_exp_logits,
+                                                  ref_exp_mask)
+                    curr_exp = tf.nn.softmax(curr_exp_logits)
+                # Photo-consistency loss weighted by explainability
+                if opt.explain_reg_weight > 0:
+                    pixel_loss += tf.reduce_mean(curr_proj_error * \
+                        tf.expand_dims(curr_exp[:,:,:,1], -1))
+                else:
+                    pixel_loss += tf.reduce_mean(curr_proj_error)
+                # Prepare images for tensorboard summaries
+                if i == 0:
+                    proj_image_stack = curr_proj_image
+                    proj_error_stack = curr_proj_error
                     if opt.explain_reg_weight > 0:
-
-                        curr_exp_logits = tf.slice(pred_exp_logits[s], 
-                                                   [0, 0, 0, i*2], #从偶数个开始
-                                                   [-1, -1, -1, 2])
-                        with tf.Session() as sess:
-                            test_curr_exp_logits=sess.run(curr_exp_logits)
-                            print(test_curr_exp_logits)
-
-                        exp_loss += opt.explain_reg_weight * \
-                            self.compute_exp_reg_loss(curr_exp_logits,
-                                                      ref_exp_mask)
-                        curr_exp = tf.nn.softmax(curr_exp_logits)
-                    # Photo-consistency loss weighted by explainability
+                        exp_mask_stack = tf.expand_dims(curr_exp[:,:,:,1], -1)
+                else: #FIXME:此处对于i=1为什么要进行concat?
+                    proj_image_stack = tf.concat([proj_image_stack,
+                                                  curr_proj_image], axis=3)
+                    proj_error_stack = tf.concat([proj_error_stack,
+                                                  curr_proj_error], axis=3)
                     if opt.explain_reg_weight > 0:
-                        pixel_loss += tf.reduce_mean(curr_proj_error * \
-                            tf.expand_dims(curr_exp[:,:,:,1], -1))
-                    else:
-                        pixel_loss += tf.reduce_mean(curr_proj_error) 
-                    # Prepare images for tensorboard summaries
-                    if i == 0:
-                        proj_image_stack = curr_proj_image
-                        proj_error_stack = curr_proj_error
-                        if opt.explain_reg_weight > 0:
-                            exp_mask_stack = tf.expand_dims(curr_exp[:,:,:,1], -1)
-                    else: #FIXME:此处对于i=1为什么要进行concat?
-                        proj_image_stack = tf.concat([proj_image_stack, 
-                                                      curr_proj_image], axis=3)
-                        proj_error_stack = tf.concat([proj_error_stack, 
-                                                      curr_proj_error], axis=3)
-                        if opt.explain_reg_weight > 0:
-                            exp_mask_stack = tf.concat([exp_mask_stack, 
-                                tf.expand_dims(curr_exp[:,:,:,1], -1)], axis=3)
+                        exp_mask_stack = tf.concat([exp_mask_stack,
+                            tf.expand_dims(curr_exp[:,:,:,1], -1)], axis=3)
                 tgt_image_all.append(curr_tgt_image)
                 src_image_stack_all.append(curr_src_image_stack)
                 proj_image_stack_all.append(proj_image_stack)
                 proj_error_stack_all.append(proj_error_stack)
                 if opt.explain_reg_weight > 0:
                     exp_mask_stack_all.append(exp_mask_stack)
-            total_loss = pixel_loss + smooth_loss + exp_loss
+            total_loss = pixel_loss + exp_loss
 
         with tf.name_scope("train_op"):
             train_vars = [var for var in tf.trainable_variables()]
@@ -158,7 +157,6 @@ class SfMLearner(object):
         self.total_loss = total_loss
         self.pixel_loss = pixel_loss
         self.exp_loss = exp_loss
-        self.smooth_loss = smooth_loss
         self.tgt_image_all = tgt_image_all
         self.src_image_stack_all = src_image_stack_all
         self.proj_image_stack_all = proj_image_stack_all
@@ -181,54 +179,7 @@ class SfMLearner(object):
             labels=tf.reshape(ref, [-1, 2]),
             logits=tf.reshape(pred, [-1, 2]))  # 进行sotfmax运算,0,1 class
         return tf.reduce_mean(l)   #对向量求均值，计算loss
-#FIXME：计算smooth_loss:对于每个scale都进行loss 计算
-    def compute_smooth_loss(self, pred_disp):               #shape(4,128,416,1)
-        def gradient(pred):
-            D_dy = pred[:, 1:, :, :] - pred[:, :-1, :, :]   #shape(4,128,415,1)
-            D_dx = pred[:, :, 1:, :] - pred[:, :, :-1, :]   #shape(4,127,416,1)
-            return D_dx, D_dy
-        #FIXME:此处的求梯度
-        dx, dy = gradient(pred_disp)
-        dx2, dxdy = gradient(dx)
-        dydx, dy2 = gradient(dy)
-        return tf.reduce_mean(tf.abs(dx2)) + \
-               tf.reduce_mean(tf.abs(dxdy)) + \
-               tf.reduce_mean(tf.abs(dydx)) + \
-               tf.reduce_mean(tf.abs(dy2))
-#可视化
-    def collect_summaries(self):
-        opt = self.opt
-        tf.summary.scalar("total_loss", self.total_loss)
-        tf.summary.scalar("pixel_loss", self.pixel_loss)
-        tf.summary.scalar("smooth_loss", self.smooth_loss)
-        tf.summary.scalar("exp_loss", self.exp_loss)
-        for s in range(opt.num_scales):
-            tf.summary.histogram("scale%d_depth" % s, self.pred_depth[s])
-            tf.summary.image('scale%d_disparity_image' % s, 1./self.pred_depth[s])
-            tf.summary.image('scale%d_target_image' % s, \
-                             self.deprocess_image(self.tgt_image_all[s]))
-            for i in range(opt.num_source):
-                if opt.explain_reg_weight > 0:
-                    tf.summary.image(
-                        'scale%d_exp_mask_%d' % (s, i), 
-                        tf.expand_dims(self.exp_mask_stack_all[s][:,:,:,i], -1))
-                tf.summary.image(
-                    'scale%d_source_image_%d' % (s, i), 
-                    self.deprocess_image(self.src_image_stack_all[s][:, :, :, i*3:(i+1)*3]))
-                tf.summary.image('scale%d_projected_image_%d' % (s, i), 
-                    self.deprocess_image(self.proj_image_stack_all[s][:, :, :, i*3:(i+1)*3]))
-                tf.summary.image('scale%d_proj_error_%d' % (s, i),
-                    self.deprocess_image(tf.clip_by_value(self.proj_error_stack_all[s][:,:,:,i*3:(i+1)*3] - 1, -1, 1)))
-        tf.summary.histogram("tx", self.pred_poses[:,:,0])
-        tf.summary.histogram("ty", self.pred_poses[:,:,1])
-        tf.summary.histogram("tz", self.pred_poses[:,:,2])
-        tf.summary.histogram("rx", self.pred_poses[:,:,3])
-        tf.summary.histogram("ry", self.pred_poses[:,:,4])
-        tf.summary.histogram("rz", self.pred_poses[:,:,5])
-        # for var in tf.trainable_variables():
-        #     tf.summary.histogram(var.op.name + "/values", var)
-        # for grad, var in self.grads_and_vars:
-        #     tf.summary.histogram(var.op.name + "/gradients", grad)
+
 
     def train(self, opt):
         opt.num_source = opt.seq_length - 1    #seq_length=3 已定,source_view=2 and target_view=1
@@ -236,7 +187,6 @@ class SfMLearner(object):
         opt.num_scales = 4
         self.opt = opt
         self.build_train_graph()
-        self.collect_summaries()
         with tf.name_scope("parameter_count"):
             parameter_count = tf.reduce_sum([tf.reduce_prod(tf.shape(v)) \
                                             for v in tf.trainable_variables()])
