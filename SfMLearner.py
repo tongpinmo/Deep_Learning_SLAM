@@ -16,9 +16,6 @@ img_height =128
 img_width =416
 
 
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf8')
 
 class SfMLearner(object):
     def __init__(self):
@@ -48,6 +45,7 @@ class SfMLearner(object):
 
 
             pred_disp = Getdepth()
+            pred_disp = pred_disp.get_depth_graph()
 
             pred_depth = [1./pred_disp]   # 逆深度
             # pred_depth = tf.Print(pred_depth,[pred_depth],message='pred_depth')

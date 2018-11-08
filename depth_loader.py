@@ -43,18 +43,16 @@ class DepthLoader(object):
             self.unpack_image_sequence(
                 image_seq, self.img_height, self.img_width, self.num_source)
 
-        # print('tgt_image.shape',tgt_image.shape)                # shape=(128, 416, 3)
-        # print('src_image_stack',src_image_stack.shape)          # shape=(128, 416, 6)
+        # print('tgt_image.shape',tgt_image.shape)                # shape=(???)
+        # print('src_image_stack',src_image_stack.shape)          # shape=(???)
 
         # Form training batches
         src_image_stack, tgt_image = \
                 tf.train.batch([src_image_stack, tgt_image],
                                batch_size=self.batch_size)
 
-        # intrinsics = tf.Print(intrinsics, [intrinsics], message='intrinsics after train.batch:')
-        # print('intrinsics after train batch:', intrinsics.shape)        #shape(4,3,3)
-        # print('tgt_image.shape', tgt_image.shape)                       #shape(4,128,416,3)
-        # print('src_image_stack', src_image_stack.shape)                 #shape(4,128,416,6)
+        # print('tgt_image.shape', tgt_image.shape)                       #shape()
+        # print('src_image_stack', src_image_stack.shape)                 #shape()
 
         # Data augmentation
         image_all = tf.concat([tgt_image, src_image_stack], axis=3)      #shape(4,128,416,9)

@@ -6,7 +6,6 @@ import numpy as np
 from depth_loader import DepthLoader
 import tensorflow as tf
 
-
 img_height=128
 img_width=416
 
@@ -14,6 +13,7 @@ img_width=416
 class Getdepth(object):
     def __init__(self):
         pass
+
 
     def getdepth(self,opt):
         opt.num_source = opt.seq_length - 1  # seq_length=3 已定,source_view=2 and target_view=1
@@ -24,15 +24,24 @@ class Getdepth(object):
 
     def get_depth_graph(self):
         opt = self.opt
+
         loader = DepthLoader(opt.dataset_dir,
-                            opt.batch_size,
-                            opt.img_height,
-                            opt.img_width,
-                            opt.num_source,
-                            opt.num_scales)
+                             opt.batch_size,
+                             opt.img_height,
+                             opt.img_width,
+                             opt.num_source,
+                             opt.num_scales)
+
         with tf.name_scope("data_loading"):
-            tgt_image, src_image_stack = loader.load_depth_batch()
+            tgt_image, _ = loader.load_depth_batch()
+            print('tgt_image:',tgt_image)
             tgt_image = self.preprocess_image(tgt_image)
+
+
+
+
+        return tgt_image
+
 
 
 
