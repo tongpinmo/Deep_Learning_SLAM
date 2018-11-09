@@ -102,12 +102,16 @@ def main():
             pred_poses = pred['pose'][0]   # dictionary to ndarray
             # print('pred_poses.shape:',pred_poses.shape)                   #shape(2,6)
             # Insert the target pose [0, 0, 0, 0, 0, 0] 
-            pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  #FIXME：此处为什么要在位置２处insert zeros
+            pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  #FIXME：此处insert zeros,当前帧为基准
             # print('pred_poses',pred_poses)
             # print('pred_poses[0]:',pred_poses[0])
             curr_times = times[tgt_idx - max_src_offset:tgt_idx + max_src_offset + 1]    #每张图片对应三帧的时间戳
             out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
             dump_pose_seq_TUM(out_file, pred_poses, curr_times)
+
+
+
+
 
 main()
 
