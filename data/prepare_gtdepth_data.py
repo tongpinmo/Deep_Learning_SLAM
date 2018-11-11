@@ -11,7 +11,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
-parser.add_argument("--dataset_name", type=str, default='kitti_raw_eigen', choices=["kitti_raw_eigen", "kitti_raw_stereo", "kitti_odom", "cityscapes"])
+parser.add_argument("--dataset_name", type=str, default='kitti_raw_eigen', choices=["kitti_raw_eigen", "kitti_raw_stereo", "kitti_odom"])
 parser.add_argument("--dump_root", type=str, default='resulting/formatted/data/ ', help="Where to dump the data")
 parser.add_argument("--seq_length", type=int, default=3, help="Length of each training sequence")
 parser.add_argument("--img_height", type=int, default=128, help="image height")
@@ -60,7 +60,6 @@ def main():
     if args.dataset_name == 'kitti_raw_eigen':   #执行这个
         from kitti.kitti_raw_gtdepth_loader import kitti_raw_gtdepth_loader
         data_loader = kitti_raw_gtdepth_loader(args.dataset_dir,
-                                                split='eigen',
                                                 img_height=args.img_height,
                                                 img_width=args.img_width,
                                                 seq_length=args.seq_length)

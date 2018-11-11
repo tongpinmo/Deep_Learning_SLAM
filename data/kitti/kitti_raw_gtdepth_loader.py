@@ -10,7 +10,6 @@ import scipy.misc
 class kitti_raw_gtdepth_loader(object):
     def __init__(self,
                  dataset_dir,
-                 split,
                  img_height=256,
                  img_width=256,
                  seq_length=5):

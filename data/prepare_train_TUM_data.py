@@ -10,9 +10,9 @@ from joblib import Parallel, delayed
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
-parser.add_argument("--dataset_name", type=str, default='kitti_raw_eigen', choices=["kitti_raw_eigen", "kitti_raw_stereo", "kitti_odom", "cityscapes"])
-parser.add_argument("--dump_root", type=str, default='resulting/formatted/data/ ', help="Where to dump the data")
+parser.add_argument("--dataset_dir", type=str, default='RGBD/rgbd_dataset_freiburg1_360', help="where the dataset is stored")
+parser.add_argument("--dataset_name", type=str, default='kitti_raw_TUM', choices=["kitti_raw_eigen", "kitti_raw_TUM", "kitti_odom", "cityscapes"])
+parser.add_argument("--dump_root", type=str, default='resulting/formatted/data_TUM/ ', help="Where to dump the data")
 parser.add_argument("--seq_length", type=int, default=3, help="Length of each training sequence")
 parser.add_argument("--img_height", type=int, default=128, help="image height")
 parser.add_argument("--img_width", type=int, default=416, help="image width")
@@ -29,9 +29,10 @@ def concat_image_seq(seq):
 
 # 读入raw_data_KITTI文件夹数据，格式化，写入相机内参
 def dump_example(n):
-    if n % 200 == 0:
+    if n % 100 == 0:
         print('Progress %d/%d....' % (n, data_loader.num_train))
     example = data_loader.get_train_example_with_idx(n)  #{'file_name':, 'image_seq': }的一个字典
+    # print('example:',example)
     if example == False:
         return
     image_seq = concat_image_seq(example['image_seq'])
@@ -45,7 +46,7 @@ def dump_example(n):
     # print('dump_dir:',dump_dir)
     # if not os.path.isdir(dump_dir):
     #     os.makedirs(dump_dir, exist_ok=True)
-    try: 
+    try:
         os.makedirs(dump_dir)
     except OSError:
         if not os.path.isdir(dump_dir):
@@ -64,49 +65,37 @@ def main():
         os.makedirs(args.dump_root)
 
     global data_loader  #为一个定义在函数外的变量赋值，该变量名是全局的
-    if args.dataset_name == 'kitti_odom':
-        from kitti.kitti_odom_loader import kitti_odom_loader
-        data_loader = kitti_odom_loader(args.dataset_dir,
-                                        img_height=args.img_height,
-                                        img_width=args.img_width,
-                                        seq_length=args.seq_length)
 
-    if args.dataset_name == 'kitti_raw_eigen':   #执行这个
-        from kitti.kitti_raw_loader import kitti_raw_loader
-        data_loader = kitti_raw_loader(args.dataset_dir,
-                                       split='eigen',
-                                       img_height=args.img_height,
-                                       img_width=args.img_width,
-                                       seq_length=args.seq_length)
+    if args.dataset_name == 'kitti_raw_TUM':   #执行这个
+        from kitti.TUM_raw_loader import TUM_raw_loader
+        data_loader = TUM_raw_loader(args.dataset_dir,
+                                     img_height=args.img_height,
+                                     img_width=args.img_width,
+                                     seq_length=args.seq_length)
 
-    if args.dataset_name == 'kitti_raw_stereo':
-        from kitti.kitti_raw_loader import kitti_raw_loader
-        data_loader = kitti_raw_loader(args.dataset_dir,
-                                       split='stereo',
-                                       img_height=args.img_height,
-                                       img_width=args.img_width,
-                                        seq_length=args.seq_length)
 
 
     Parallel(n_jobs=args.num_threads)(delayed(dump_example)(n) for n in range(data_loader.num_train))
 
     # Split into train/val
     np.random.seed(8964)
-    subfolders = os.listdir(args.dump_root)
-    # print('subfolders:',subfolders)
+    # subfolders = os.listdir(args.dump_root)
+    # print('subfolders:',subfolders)             #['rgb']
     # 路径/resulting /formatted /data/
     with open(args.dump_root + 'train.txt', 'w') as tf:
         with open(args.dump_root + 'val.txt', 'w') as vf:
-            imfiles = glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
-            frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
+            imfiles = glob(os.path.join(args.dump_root, 'rgb','*.jpg'))
+            # print('imfiles:',imfiles)
+
+            frame_ids = [os.path.basename(fi)[:-4] for fi in imfiles]
             for frame in frame_ids:
-                if np.random.random() < 0.1:
-                    vf.write('%s %s\n' % ('Images', frame))
+                if np.random.random() < 0.05:
+                    vf.write('%s %s\n' % ('rgb', frame))
                 else:
-                    tf.write('%s %s\n' % ('Images', frame))
+                    tf.write('%s %s\n' % ('rgb', frame))
 
 main()
 
-
+ 
 
 

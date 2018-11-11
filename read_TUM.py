@@ -24,18 +24,43 @@ import os
 #     print all_frames
 #
 #
-# if __name__ == '__main__':
-#     collect_train_frames(path)
 
 
-a = np.zeros((3,3))
+path = 'RGBD/rgbd_dataset_freiburg1_360'
 
-ta = tf.convert_to_tensor(a)
+with open(path + '/' + 'associate.txt') as f:
+    with open(path + '/' + 'depth.txt','w') as df:
+        with open(path + '/' + 'rgb.txt','w') as rf:
+            for lines in f.readlines():
+                lines = lines.split(' ')
+                # print('lines:',lines)
+                depth = lines[1]
+                print('depth:',depth)
+                rgb   = lines[3]
+                print('rgb:',rgb)
+                df.write('%s\n' % (depth))
+                rf.write('%s' % (rgb)  )
 
-print('ta:',ta)
 
-with tf.Session() as sess:
-    b = sess.run(ta)
-    c = ta.eval()
-    print('b:',b)
-    print('c:',c)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
