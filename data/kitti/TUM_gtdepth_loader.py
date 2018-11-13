@@ -7,37 +7,35 @@ from glob import glob
 import os
 import scipy.misc
 
-class TUM_raw_loader(object):
+class TUM_gtdepth_loader(object):
     def __init__(self,
                  dataset_dir,
-                 img_height=128,
-                 img_width=416,
-                 seq_length=3):
-
+                 img_height=256,
+                 img_width=256,
+                 seq_length=5):
         dir_path = os.path.dirname(os.path.realpath(__file__))   #
 
-        self.dataset_dir = dataset_dir   #RGBD/rgbd_dataset_freiburg1_360
+        self.dataset_dir = dataset_dir   ##RGBD/rgbd_dataset_freiburg1_360
         self.img_height = img_height
-        self.img_width  = img_width
+        self.img_width = img_width
         self.seq_length = seq_length
-        self.date_path  = os.path.join(self.dataset_dir+'/'+'rgb.txt')
+        self.date_path = os.path.join(self.dataset_dir + '/' + 'depth.txt')
         self.collect_train_frames()
 
-#将raw_data中的Images 中的数据格式变为 formatted/data里面的命名格式
+#将raw_data中的Depth 中的数据格式变为 formatted/data里面的命名格式
     def collect_train_frames(self):
         all_frames = []  #
         # if os.path.isdir(self.date_list):
-        with open(self.date_path,'r') as f:
+        with open(self.date_path, 'r') as f:
             lines = f.readlines()
             all_frames = lines
-        # print all_frames
+        # print('all_frames:',all_frames)
 
         self.train_frames = all_frames
         # print('self.train_frames:',self.train_frames)
         # print('type of self.train_frames:',type(self.train_frames))
-        self.num_train = len(self.train_frames)                 #774
+        self.num_train = len(self.train_frames)  # 774
         # print('self.num_train:',self.num_train)
-
 
     def is_valid_sample(self, frames, tgt_idx):
         N = len(frames)
@@ -70,32 +68,28 @@ class TUM_raw_loader(object):
         for o in range(-half_offset, half_offset + 1): #range(-1,2)
             curr_idx = tgt_idx + o
             curr_drive    = frames[curr_idx].strip().split('/')[0]
+            # print('curr_drive:',curr_drive)
             curr_frame_id = frames[curr_idx].strip().split('/')[1][:-4]
-            # print('curr_drive:',curr_drive,'curr_frame_id:',curr_frame_id)
+            # print('curr_frame_id:', curr_frame_id)
             curr_img = self.load_image_raw(curr_drive, curr_frame_id)
-            # print ('curr_img.shape:',curr_img.shape)             #(480, 640, 3)
+            # print curr_img.shape      #(480, 640)
             if o == 0:  #FIXME：求出缩放比例，后面对intrinsics使用
                 zoom_y = self.img_height/curr_img.shape[0]  #128.0/480=0.266666667
                 # print('zoom_y',zoom_y)
                 zoom_x = self.img_width/curr_img.shape[1]   #416.0/640=0.65
                 # print('zoom_x', zoom_x)
             curr_img = scipy.misc.imresize(curr_img, (self.img_height, self.img_width))  #将原始图片resize为128*416
-            # print('curr_img_imresize:',curr_img.shape)           #shape(128,416,3)
+            # print('shape of curr_img:',curr_img.shape)             #shape(128,416)
             image_seq.append(curr_img)
-        return image_seq, zoom_x, zoom_y
+            # print('image_seq:',image_seq)
+        return image_seq
 
     def load_example(self, frames, tgt_idx):
-        image_seq, zoom_x, zoom_y = self.load_image_sequence(frames, tgt_idx, self.seq_length)
-        # print('image_seq:',image_seq)                       #FIXME：此处将连续三帧ndarray读入一个list
+        image_seq = self.load_image_sequence(frames, tgt_idx, self.seq_length)
         tgt_drive    = frames[tgt_idx].strip().split('/')[0]
         tgt_frame_id = frames[tgt_idx].strip().split('/')[1][:-4]
         # print('tgt_drive',tgt_drive,'tgt_frame_id',tgt_frame_id)
-        intrinsics = self.load_intrinsics_raw(tgt_drive, tgt_frame_id)   #读取 calib_cam_to_cam.txt
-        # print('intrinsics before scale',intrinsics)
-        intrinsics = self.scale_intrinsics(intrinsics, zoom_x, zoom_y)     # 经过了尺度变换,放入._cam.txt中
-        # print('intrinsics after scale', intrinsics)
         example = {}
-        example['intrinsics'] = intrinsics
         example['image_seq'] = image_seq
         example['folder_name'] = tgt_drive
         example['file_name'] = tgt_frame_id
@@ -107,45 +101,8 @@ class TUM_raw_loader(object):
         # print('img_file:',img_file)
         img = scipy.misc.imread(img_file)   #将图像转换为ndarray数组
         # print('img:',img)
-        # print('img.shape:',img.shape)           #shape(480,640,3)
+        # img = img.reshape(480,640,1)
+        # print('img.shape:',img.shape)           #shape(480,640)
         return img
-
-    def load_intrinsics_raw(self, drive, frame_id):
-        calib_file = os.path.join(self.dataset_dir,'calib_cam_to_cam.txt')      #:'raw_data_NYU/calib_cam_to_cam.txt'
-        # print('calib_file',calib_file)
-
-        filedata = self.read_raw_calib_file(calib_file)
-        # print('filedata',filedata)
-        P_rect = np.reshape(filedata['P_rect'], (3, 4))
-        # print('cid',cid)
-        # print('P_rect',P_rect)
-        intrinsics = P_rect[:3, :3]
-        # print('intrinsics from calib_txt',intrinsics)
-        return intrinsics
-
-    def read_raw_calib_file(self,filepath):
-        # From https://github.com/utiasSTARS/pykitti/blob/master/pykitti/utils.py
-        """Read in a calibration file and parse into a dictionary."""
-        data = {}
-
-        with open(filepath, 'r') as f:
-            for line in f.readlines():
-                key, value = line.split(':', 1)
-                # The only non-float values in these files are dates, which
-                # we don't care about anyway
-                try:
-                        data[key] = np.array([float(x) for x in value.split()])
-                except ValueError:
-                        pass
-        return data
-
-#FIXME:此处对内参矩阵做出了相应地缩放
-    def scale_intrinsics(self, mat, sx, sy):
-        out = np.copy(mat)
-        out[0,0] *= sx
-        out[0,2] *= sx
-        out[1,1] *= sy
-        out[1,2] *= sy
-        return out
 
 

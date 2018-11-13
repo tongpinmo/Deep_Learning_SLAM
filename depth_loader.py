@@ -106,7 +106,7 @@ class DepthLoader(object):
 
 #格式化数据,all_list 包括.jpg
     def format_file_list(self, data_root, split):
-        with open(data_root + '/%s.txt' % split, 'r') as f: #一行一行地打开,目录应该在--dump_root=resulting/formatted/data/
+        with open(data_root + '/%s.txt' % split, 'r') as f: #打开 resulting/formatted/data/depth.txt
              frames=f.readlines()
         subfolders = [x.split(' ')[0] for x in frames]
         frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作是去掉最后一个,最后一个不取

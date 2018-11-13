@@ -41,9 +41,7 @@ class SfMLearner(object):
 
         with tf.name_scope("depth_prediction"):
 
-            #todo  此处将groundtruth depth 多个scale读取进来,
-            #todo [ disp1:shape=[4,128,416,1];disp2:shape=[4,64,208,1];disp3:shape=[4,32,104,1];disp4:shape=[4,16,52,1] ];
-
+            # [ disp:shape=[4,128,416,1]
             #Fix the groundtruth depth
 
             pred_disp = Getdepth()

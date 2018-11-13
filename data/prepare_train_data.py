@@ -96,14 +96,10 @@ def main():
     # print('subfolders:',subfolders)
     # 路径/resulting /formatted /data/
     with open(args.dump_root + 'train.txt', 'w') as tf:
-        with open(args.dump_root + 'val.txt', 'w') as vf:
-            imfiles = glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
-            frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
-            for frame in frame_ids:
-                if np.random.random() < 0.1:
-                    vf.write('%s %s\n' % ('Images', frame))
-                else:
-                    tf.write('%s %s\n' % ('Images', frame))
+        imfiles = glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
+        frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
+        for frame in frame_ids:
+            tf.write('%s %s\n' % ('Images', frame))
 
 main()
 

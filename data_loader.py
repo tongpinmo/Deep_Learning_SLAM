@@ -38,6 +38,7 @@ class DataLoader(object):
             shuffle=True)
         self.steps_per_epoch = int(
             len(file_list['image_file_list'])//self.batch_size)
+        # print('self.steps_per_epoch:',self.steps_per_epoch)
 
         # Load images
         img_reader = tf.WholeFileReader() #reader
