@@ -9,7 +9,8 @@ import tensorflow as tf
 class DepthLoader(object):
     #_init_是python class中的构造函数,初始化实例的值
     def __init__(self,
-                 dataset_dir='resulting/formatted/data/',
+                 # dataset_dir='resulting/formatted/data/',
+                 dataset_dir='resulting/formatted/data_TUM/',
                  batch_size = 4,
                  img_height = 128,
                  img_width  = 416,
@@ -104,12 +105,13 @@ class DepthLoader(object):
         im = tf.cast(im, dtype=tf.float32)
         return im
 
-#格式化数据,all_list 包括.jpg
+#all_list 包括.jpg
     def format_file_list(self, data_root, split):
         with open(data_root + '/%s.txt' % split, 'r') as f: #打开 resulting/formatted/data/depth.txt
              frames=f.readlines()
         subfolders = [x.split(' ')[0] for x in frames]
-        frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作是去掉最后一个,最后一个不取
+        frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作去掉'\n'
+        # print('frame_ids;',frame_ids)
         image_file_list = [os.path.join(data_root, subfolders[i],
             frame_ids[i] + '.jpg') for i in range(len(frames))]
         all_list = {}

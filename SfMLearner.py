@@ -35,7 +35,7 @@ class SfMLearner(object):
             src_image_stack = self.preprocess_image(src_image_stack)            # [-1,1) 之间
             # tgt_image = tf.Print(tgt_image,[tgt_image],message= 'tgt_image')  #(4,128,416,3)
             # src_image_stack = tf.Print(src_image_stack, [src_image_stack], message='src_image_stack')     #(4,128,416,6)
-            # print('intrinsics:',intrinsics)                                   #shape(4,4,3,3)
+            # # print('intrinsics:',intrinsics)                                   #shape(4,4,3,3)
             # print('tgt_image.shape', tgt_image.shape)                           # shape(4,128,416,3)
             # print('src_image_stack', src_image_stack.shape)                     # shape(4,128,416,6)
 
@@ -46,6 +46,7 @@ class SfMLearner(object):
 
             pred_disp = Getdepth()
             pred_disp = pred_disp.get_depth_graph()
+
 
             pred_depth = [1./pred_disp]   # 逆深度
             # pred_depth = tf.Print(pred_depth,[pred_depth],message='pred_depth')
@@ -92,6 +93,7 @@ class SfMLearner(object):
                     pred_poses[:,i,:],                                      #pred_poses.shape(4,6)  #todo :要改为两帧的话可以从这里下手
                     intrinsics[:,s,:,:])                                    #shape(4,4,3,3)
                 curr_proj_error = tf.abs(curr_proj_image - curr_tgt_image)  #投影光度误差
+                # print('curr_proj_error.shape:',curr_proj_error.shape)
                 # Cross-entropy loss as regularization for the
                 # explainability prediction
                 if opt.explain_reg_weight > 0:
@@ -116,14 +118,18 @@ class SfMLearner(object):
                 # Prepare images for tensorboard summaries
                 if i == 0:
                     proj_image_stack = curr_proj_image
+                    # print('proj_image_stack.shape:',proj_image_stack.shape)
                     proj_error_stack = curr_proj_error
+                    # print('proj_error_stack.shape:', proj_error_stack.shape)
                     if opt.explain_reg_weight > 0:
                         exp_mask_stack = tf.expand_dims(curr_exp[:,:,:,1], -1)
                 else: #FIXME:此处对于i=1为什么要进行concat?
                     proj_image_stack = tf.concat([proj_image_stack,
                                                   curr_proj_image], axis=3)
+                    # print('proj_image_stack.shape:',proj_image_stack.shape)
                     proj_error_stack = tf.concat([proj_error_stack,
                                                   curr_proj_error], axis=3)
+                    # print('proj_error_stack.shape:', proj_error_stack.shape)
                     if opt.explain_reg_weight > 0:
                         exp_mask_stack = tf.concat([exp_mask_stack,
                             tf.expand_dims(curr_exp[:,:,:,1], -1)], axis=3)

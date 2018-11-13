@@ -80,12 +80,13 @@ def main():
         imfiles = glob(os.path.join(args.dump_root,'depth','*.jpg'))
         # print('imfiles:',imfiles)
         frame_ids = [os.path.basename(fi)[:-4] for fi in imfiles]
-        print('frame_ids:',frame_ids)
+        # print('frame_ids:',frame_ids)
         for frame in frame_ids:
             tf.write('%s %s\n' % ('depth', frame))
 
 
 main()
+
 
 
 

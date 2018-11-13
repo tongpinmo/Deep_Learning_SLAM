@@ -21,7 +21,7 @@ flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
 flags.DEFINE_integer("seq_length", 3, "Sequence length for each example")
 # flags.DEFINE_integer("seq_length", 2, "Sequence length for each example")
-flags.DEFINE_integer("max_steps", 20000, "Maximum number of training iterations")
+flags.DEFINE_integer("max_steps", 200000, "Maximum number of training iterations")
 # flags.DEFINE_integer("max_steps", 200000, "Maximum number of training iterations")
 flags.DEFINE_integer("summary_freq", 100, "Logging every log_freq iterations")
 flags.DEFINE_integer("save_latest_freq", 1000, \
@@ -41,8 +41,8 @@ def main(_):
     if not os.path.exists(FLAGS.checkpoint_dir):
         os.makedirs(FLAGS.checkpoint_dir)
         
-    sfm = SfMLearner() #只是initialize
-    sfm.train(FLAGS)  #只执行了构图部分self.build_train_graph()
+    sfm = SfMLearner()
+    sfm.train(FLAGS)
 
 
 

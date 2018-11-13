@@ -7,3 +7,6 @@ idea/
 KITTI/
 KITTI_testing_Pose_output/
 RGBD/
+checkpoints_NYU/
+checkpoints_TUM/
+

@@ -144,10 +144,10 @@ class DataLoader(object):
         return im, intrinsics
 #格式化数据,all_list 包括.jpg和cam.txt
     def format_file_list(self, data_root, split):
-        with open(data_root + '/%s.txt' % split, 'r') as f: #一行一行地打开,目录应该在--dump_root=resulting/formatted/data/
+        with open(data_root + '/%s.txt' % split, 'r') as f: #一行一行地打开,目录应该在--data_root=resulting/formatted/data_TUM/
              frames=f.readlines()
         subfolders = [x.split(' ')[0] for x in frames]
-        frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作是去掉最后一个,最后一个不取
+        frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作是去掉'\n'
 
         image_file_list = [os.path.join(data_root, subfolders[i], 
             frame_ids[i] + '.jpg') for i in range(len(frames))]

@@ -9,7 +9,8 @@ import tensorflow as tf
 
 class Getdepth(object):
     def __init__(self,
-                 dataset_dir = 'resulting/formatted/data/',
+                 dataset_dir='resulting/formatted/data/',
+                 # dataset_dir = 'resulting/formatted/data_TUM/',
                  batch_size = 4,
                  img_height = 128,
                  img_width  = 416,

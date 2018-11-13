@@ -1,4 +1,4 @@
-### Deep_Learing_SLAM实验结果记录
+####  Deep_Learing_SLAM实验结果记录
 
 
 
@@ -57,7 +57,19 @@
   Progress: 1500/1591
   ```
 
-* 生成轨迹：gentrajectory.py
+  生成轨迹：gentrajectory.py
+
+  
+
+* ### TUM_Dataset
+
+  #### preparing_training
+
+* image 和 depth的过程与上面过程类似，只是读取方式不同,生成depth.txt;train.txt
+
+  #### training
+
+* 
 
   
 
