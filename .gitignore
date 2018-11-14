@@ -5,8 +5,9 @@ venv/
 idea/
 .gitignore
 KITTI/
-KITTI_testing_Pose_output/
 RGBD/
 checkpoints_NYU/
 checkpoints_TUM/
+NYU_testing_KITTI_Pose_output/
+TUM_testing_KITTI_Pose_output/
 

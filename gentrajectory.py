@@ -7,7 +7,7 @@ import numpy as np
 import  matplotlib.pyplot as  plt
 from mpl_toolkits.mplot3d import Axes3D
 
-path='KITTI_testing_Pose_output'
+path='TUM_testing_KITTI_Pose_output'
 files = os.listdir(path)
 files = natsort.natsorted(files)            #已经顺序排列可以不要
 
@@ -55,8 +55,8 @@ figure = plt.figure()
 ax = figure.add_subplot(111,projection ='3d')
 ax.plot(x, y, z)
 
-# ax = figure.add_subplot(111)
-# ax.plot(x, z)
+#ax = figure.add_subplot(111)
+#ax.plot(x, z)
 
 plt.xlabel('x')
 plt.ylabel('y')

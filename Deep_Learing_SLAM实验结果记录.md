@@ -69,6 +69,17 @@
 
   #### training
 
+  ```python
+   Epoch: [ 1] [  100/  185] time: 0.0907/it loss: 0.246
+   [*] Saving checkpoint to checkpoints_TUM/...
+  Epoch: [ 2] [   15/  185] time: 0.0838/it loss: 0.291
+  ''''''
+   [*] Saving checkpoint to checkpoints_TUM/...
+  Epoch: [1081] [  100/  185] time: 0.0829/it loss: 0.168
+   [*] Saving checkpoint to checkpoints_TUM/...
+  
+  ```
+
 * 
 
   
