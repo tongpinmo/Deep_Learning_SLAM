@@ -7,7 +7,8 @@ import numpy as np
 import  matplotlib.pyplot as  plt
 from mpl_toolkits.mplot3d import Axes3D
 
-path='TUM_testing_KITTI_Pose_output'
+# path = 'NYU_testing_KITTI_Pose_output'
+path = 'TUM_testing_KITTI_Pose_output'
 files = os.listdir(path)
 files = natsort.natsorted(files)            #已经顺序排列可以不要
 
@@ -38,12 +39,12 @@ for file in files:
 
             t0_x = [0.000000]
             t0_y = [0.000000]
-            t0_z = [-0.00000]
+            t0_z = [-0.000000]
             t0 = np.array([t0_x,t0_y,t0_z]).reshape(3,1)
             T = np.add(np.dot(M,t0),t)
         else:
             T = np.add(np.dot(M,T),t)
-        # print('T',T)
+        # print('T',T)    #shape(3,1)
 
 
     x.append(T[0,0])
