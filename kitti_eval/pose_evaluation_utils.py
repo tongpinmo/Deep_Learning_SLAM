@@ -359,6 +359,7 @@ def euler2quat(z=0, y=0, x=0, isRadian=True):
                      cx*cz*sy - sx*cy*sz,
                      cx*cy*sz + sx*cz*sy])
 
+#将Poses(tx,ty,tz,rx,ry,rz)转化成4*4的变换矩阵T
 def pose_vec_to_mat(vec):
     tx = vec[0]
     ty = vec[1]
@@ -367,19 +368,22 @@ def pose_vec_to_mat(vec):
     rot = euler2mat(vec[5], vec[4], vec[3])
     Tmat = np.concatenate((rot, trans), axis=1) # shape(3,4)
     hfiller = np.array([0, 0, 0, 1]).reshape((1,4))
-    Tmat = np.concatenate((Tmat, hfiller), axis=0)   #(4,4)齐次坐标
+    Tmat = np.concatenate((Tmat, hfiller), axis=0)
     return Tmat
 
 def dump_pose_seq_TUM(out_file, poses, times):
     # First frame as the origin
     first_pose = pose_vec_to_mat(poses[0])
+    # print('first_pose:',first_pose)
     with open(out_file, 'w') as f:
         for p in range(len(times)):
             this_pose = pose_vec_to_mat(poses[p])
-            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                        #FIXME：此处逆相乘
+            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                    #FIXME：变换矩阵求逆相乘,转到第一帧(t-1)基准上来
             tx = this_pose[0, 3]
             ty = this_pose[1, 3]
             tz = this_pose[2, 3]
             rot = this_pose[:3, :3]
             qw, qx, qy, qz = rot2quat(rot)
-            f.write('%f %f %f %f %f %f %f %f\n' % (times[p], tx, ty, tz, qx, qy, qz, qw))   #时间戳，平移，旋转四元数
+            f.write('%f %f %f %f %f %f %f %f\n' % (times[p], tx, ty, tz, qx, qy, qz, qw))
+
+#poses[0]:t->t-1;poses[1]:t->t;poses[2]:t->t+1

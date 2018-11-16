@@ -200,14 +200,14 @@ class DataLoader(object):
                              [0, 0, tgt_start_idx, 0], 
                              [-1, -1, img_width, -1])
         # Source frames before the target frame
-        src_image_1 = tf.slice(image_seq,  # shape(1,128,832,3)
+        src_image_1 = tf.slice(image_seq,  # shape(1,128,416,3)
                                [0, 0, 0, 0], 
                                [-1, -1, int(img_width * (num_source//2)), -1])
         # Source frames after the target frame
-        src_image_2 = tf.slice(image_seq,  # # shape(1,128,832,3)
+        src_image_2 = tf.slice(image_seq,  # # shape(1,128,416,3)
                                [0, 0, int(tgt_start_idx + img_width), 0], 
                                [-1, -1, int(img_width * (num_source//2)), -1])
-        src_image_seq = tf.concat([src_image_1, src_image_2], axis=2)           #  shape(1,128,1664,3)
+        src_image_seq = tf.concat([src_image_1, src_image_2], axis=2)           #  shape(1,128,832,3)
         # Stack source frames along the color channels (i.e. [B, H, W, N*3])
         src_image_stack = tf.concat([tf.slice(src_image_seq,                    #   shape(1,128,416,6)
                                     [0, 0, i*img_width, 0], 

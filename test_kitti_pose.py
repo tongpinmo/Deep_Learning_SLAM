@@ -96,6 +96,7 @@ def main():
                                             FLAGS.img_height, 
                                             FLAGS.img_width)
             # print('image_seq.shape',image_seq.shape)                      #(128, 1248, 3)
+            # 传入data,feed_dict={}
             pred = sfm.inference(image_seq[None, :, :, :], sess, mode='pose')       #an dictionary
             # print('pred_poses.array:',pred['pose'])
             # print('pred_poses.array:', pred['pose'].shape)                  #shape(1,2,6)
@@ -106,6 +107,7 @@ def main():
             # print('pred_poses',pred_poses)
             # print('pred_poses[0]:',pred_poses[0])
             curr_times = times[tgt_idx - max_src_offset:tgt_idx + max_src_offset + 1]    #每张图片对应三帧的时间戳
+            # print(type(curr_times))
             out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
             dump_pose_seq_TUM(out_file, pred_poses, curr_times)
 
