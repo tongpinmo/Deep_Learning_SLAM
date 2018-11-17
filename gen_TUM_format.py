@@ -11,8 +11,7 @@ from kitti_eval.pose_evaluation_utils import *
 path = 'NYU_testing_KITTI_Pose_output'
 
 files = os.listdir(path)
-# print('files:',files)
-
+# print('files_length:',len(files))
 
 
 #将Poses(tx,ty,tz,qx,qy,qz,qw)转化成4*4的变换矩阵T
@@ -24,9 +23,9 @@ def TUM_vec_to_Tmat(R,t):
     return Tmat
 
 
-for file in files:
+with open('trajectory.txt','w') as tf:
 
-    with open('trajectory.txt','w') as tf:
+    for file in files:
 
         with open(path + '/' + file) as f:
             lines = f.readlines()
@@ -55,12 +54,22 @@ for file in files:
             # print('Tmat:',Tmat)
 
         if (file.split('.')[0] == '000000'):
+            # print(type(tx))
+            tx = float(tx)
+            ty = float(ty)
+            tz = float(tz)
+            qx = float(qx)
+            qy = float(qy)
+            qz = float(qz)
+            qw = float(qw)
 
-            first_pose = Tmat
+            tf.write('%f %f %f %f %f %f %f %f\n' % (0.000000, 0.000000, 0.000000,-0.000000, 0.000000, -0.000000,-0.000000,1.000000))
+            tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
+            this_pose = Tmat
 
         else:
-
-            this_pose = np.dot(Tmat,first_pose)
+            this_pose = np.dot(Tmat,this_pose)
+            # print('this_pose:',this_pose)
             tx = this_pose[0, 3]
             ty = this_pose[1, 3]
             tz = this_pose[2, 3]
