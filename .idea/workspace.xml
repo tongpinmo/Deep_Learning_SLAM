@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="00eea1c8-117c-444c-9c74-07848065d3cb" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/Deep_Learing_SLAM实验结果记录.md" afterPath="$PROJECT_DIR$/Deep_Learing_SLAM实验结果记录.md" />
       <change beforePath="$PROJECT_DIR$/gen_TUM_format.py" afterPath="$PROJECT_DIR$/gen_TUM_format.py" />
-      <change beforePath="$PROJECT_DIR$/trajectory.txt" afterPath="$PROJECT_DIR$/trajectory.txt" />
+      <change beforePath="$PROJECT_DIR$/gentrajectory.py" afterPath="$PROJECT_DIR$/gentrajectory.py" />
+      <change beforePath="$PROJECT_DIR$/plot_groundtruth_pose.py" afterPath="$PROJECT_DIR$/plot_groundtruth_pose.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -29,8 +32,8 @@
       <file leaf-file-name="gentrajectory.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gentrajectory.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-19">
-              <caret line="16" column="6" lean-forward="true" selection-start-line="16" selection-start-column="6" selection-end-line="16" selection-end-column="6" />
+            <state relative-caret-position="684">
+              <caret line="41" column="29" lean-forward="false" selection-start-line="41" selection-start-column="29" selection-end-line="41" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -83,11 +86,21 @@
       <file leaf-file-name="gen_TUM_format.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gen_TUM_format.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+            <state relative-caret-position="456">
+              <caret line="27" column="32" lean-forward="false" selection-start-line="27" selection-start-column="32" selection-end-line="27" selection-end-column="32" />
               <folding>
                 <element signature="e#35#58#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="plot_groundtruth_pose.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/plot_groundtruth_pose.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="133">
+              <caret line="10" column="23" lean-forward="false" selection-start-line="10" selection-start-column="23" selection-end-line="10" selection-end-column="23" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -139,6 +152,7 @@
         <option value="$PROJECT_DIR$/data_loader.py" />
         <option value="$PROJECT_DIR$/kitti_eval/pose_evaluation_utils.py" />
         <option value="$PROJECT_DIR$/test_kitti_pose.py" />
+        <option value="$PROJECT_DIR$/plot_groundtruth_pose.py" />
         <option value="$PROJECT_DIR$/gentrajectory.py" />
         <option value="$PROJECT_DIR$/gen_TUM_format.py" />
       </list>
@@ -423,11 +437,6 @@
           <url>file://$PROJECT_DIR$/test_kitti_pose.py</url>
           <line>111</line>
           <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gen_TUM_format.py</url>
-          <line>25</line>
-          <option name="timeStamp" value="49" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -747,22 +756,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/plot_groundtruth_pose.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="12" column="7" lean-forward="false" selection-start-line="12" selection-start-column="7" selection-end-line="12" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gentrajectory.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-19">
-          <caret line="16" column="6" lean-forward="true" selection-start-line="16" selection-start-column="6" selection-end-line="16" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data_loader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
@@ -799,10 +792,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gentrajectory.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="684">
+          <caret line="41" column="29" lean-forward="false" selection-start-line="41" selection-start-column="29" selection-end-line="41" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/plot_groundtruth_pose.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="10" column="23" lean-forward="false" selection-start-line="10" selection-start-column="23" selection-end-line="10" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gen_TUM_format.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="18" column="0" lean-forward="true" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
+        <state relative-caret-position="456">
+          <caret line="27" column="32" lean-forward="false" selection-start-line="27" selection-start-column="32" selection-end-line="27" selection-end-column="32" />
           <folding>
             <element signature="e#35#58#0" expanded="true" />
           </folding>

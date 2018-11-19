@@ -46,11 +46,11 @@ for file in files:
         else:
             T = np.add(np.dot(M,T),t)
         # print('T',T)    #shape(3,1)
-
-
     x.append(T[0,0])
     y.append(T[1,0])
     z.append(T[2,0])
+
+
 
 figure = plt.figure()
 

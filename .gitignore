@@ -10,4 +10,6 @@ checkpoints_NYU/
 checkpoints_TUM/
 NYU_testing_KITTI_Pose_output/
 TUM_testing_KITTI_Pose_output/
+kitti_eval/ground_truth/
+trajectory_SfMlearner.txt
 

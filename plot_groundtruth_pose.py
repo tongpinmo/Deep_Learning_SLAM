@@ -7,7 +7,8 @@ from itertools import islice
 #这种情况下只是画出了[tx,ty,tz]
 
 # path = 'KITTI/odometry/color/sequences/09/09_groundtruth_full.txt'
-path = 'RGBD/rgbd_dataset_freiburg1_360/pose_groundtruth.txt'
+# path = 'RGBD/rgbd_dataset_freiburg1_360/pose_groundtruth.txt'
+path = 'trajectory.txt'
 
 
 tx = []

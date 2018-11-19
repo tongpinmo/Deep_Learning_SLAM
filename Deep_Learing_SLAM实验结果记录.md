@@ -82,6 +82,70 @@
 
 * 测试：依旧用kitti/odometry/09序列
 
+* 生成TUM.format格式文件
+
+* TUM_benchmark 工具：
+
+* 用NYU_dataset测评出来的
+
+  ```python
+  绝对轨迹误差：
+  - python evaluate_ate.py 09_groundtruth_full.txt trajectory.txt 
+  >>  226.240497
+  
+  python evaluate_ate.py 09_groundtruth_full.txt trajectory.txt --verbose
+  >>
+  compared_pose_pairs 1590 pairs
+  absolute_translational_error.rmse 226.240497 m
+  absolute_translational_error.mean 215.324023 m
+  absolute_translational_error.median 236.448666 m
+  absolute_translational_error.std 69.428581 m
+  absolute_translational_error.min 57.871562 m
+  absolute_translational_error.max 323.364532 m
+  
+  
+  相对轨迹误差：
+  python evaluate_rpe.py 09_full.txt trajectory.txt  
+  >>
+  280.0970400204203
+  ```
+
+  ```python
+  测试SfMlearner：
+  python evaluate_ate.py trajectory_SfMlearner.txt 09_full.txt  
+  >> 204.777413
+  
+  python evaluate_ate.py trajectory_SfMlearner.txt 09_full.txt  --verbose
+  >>
+  compared_pose_pairs 1590 pairs
+  absolute_translational_error.rmse 204.777413 m
+  absolute_translational_error.mean 183.773732 m
+  absolute_translational_error.median 171.123427 m
+  absolute_translational_error.std 90.338278 m
+  absolute_translational_error.min 35.593526 m
+  absolute_translational_error.max 444.678950 m
+  
+  python evaluate_rpe.py trajectory_SfMlearner.txt 09_full.txt 
+  >> 311.79556490549425
+  
+  
+  ```
+
+  
+
+  eval_pose:
+
+  ```python
+  sudo python kitti_eval/eval_pose.py --gtruth_dir=kitti_eval/ground_truth/09/ --pred_dir=NYU_testing_KITTI_Pose_output
+  [sudo] password for ubuntu: 
+  Predictions dir: NYU_testing_KITTI_Pose_output
+  ATE mean: 0.2847, std: 0.1734
+  ```
+
+  
+
+  
+
   
 
   
