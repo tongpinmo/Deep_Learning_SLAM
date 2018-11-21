@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 #这种方式是直接画出轨迹，公式参考slam14-Page42,没有使用TUM的标准格式
 
 path = 'NYU_testing_KITTI_Pose_output'
+
 # path = 'TUM_testing_KITTI_Pose_output'
 files = os.listdir(path)
 files = natsort.natsorted(files)            #已经顺序排列可以不要

@@ -131,22 +131,24 @@
   
   ```
 
-  
+  * eval_pose:
 
-  eval_pose:
+  * /NYU_eval_KITTI09_pose.sh 
 
-  ```python
-  sudo python kitti_eval/eval_pose.py --gtruth_dir=kitti_eval/ground_truth/09/ --pred_dir=NYU_testing_KITTI_Pose_output
-  [sudo] password for ubuntu: 
-  Predictions dir: NYU_testing_KITTI_Pose_output
-  ATE mean: 0.2847, std: 0.1734
-  ```
+  * ```python
+    sudo python kitti_eval/eval_pose.py --gtruth_dir=kitti_eval/ground_truth/09/ --pred_dir=NYU_testing_KITTI_Pose_output
+    [sudo] password for ubuntu: 
+    Predictions dir: NYU_testing_KITTI_Pose_output
+    ATE mean: 0.2847, std: 0.1734
+    ```
 
-  
+  * /TUM_eval_KITTI09_pose.sh 
 
-  
+  * ```python
+    ATE mean: 0.6580, std: 0.2128
+    ```
 
-  
+* 
 
   
 

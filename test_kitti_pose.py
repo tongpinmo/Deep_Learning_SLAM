@@ -16,7 +16,7 @@ flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 1, "The size of of a sample batch")
 flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
-flags.DEFINE_integer("seq_length",5, "Sequence length for each example")
+flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
 flags.DEFINE_integer("test_seq", 9, "Sequence id to test")
 flags.DEFINE_string("dataset_dir", None, "Dataset directory")
 flags.DEFINE_string("output_dir", None, "Output directory")
@@ -36,6 +36,7 @@ def load_image_sequence(dataset_dir,
         curr_drive, curr_frame_id = frames[curr_idx].split(' ')
         img_file = os.path.join(
             dataset_dir, 'sequences', '%s/image_2/%s.png' % (curr_drive, curr_frame_id))
+        # print('img_file:',img_file)
         curr_img = scipy.misc.imread(img_file)
 
         curr_img = scipy.misc.imresize(curr_img, (img_height, img_width)) #调整图像尺寸

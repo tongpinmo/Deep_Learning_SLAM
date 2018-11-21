@@ -9,6 +9,7 @@ from itertools import islice
 # path = 'KITTI/odometry/color/sequences/09/09_groundtruth_full.txt'
 # path = 'RGBD/rgbd_dataset_freiburg1_360/pose_groundtruth.txt'
 path = 'trajectory.txt'
+# path = 'trajectory_c++.txt'
 
 
 tx = []

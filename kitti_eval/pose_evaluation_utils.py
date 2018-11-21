@@ -209,7 +209,7 @@ def mat2euler(M, cy_thresh=None, seq='zyx'):
             z = 0.0
             if r31 < 0:
                 y = np.pi/2
-                x = atan2(r12, r13)
+                x = math.atan2(r12, r13)
             else:
                 y = -np.pi/2
     else:
@@ -339,7 +339,7 @@ def euler2quat(z=0, y=0, x=0, isRadian=True):
          http://en.wikipedia.org/wiki/Quaternions#Hamilton_product - to
          formulae from 2.) to give formula for combined rotations.
     '''
-  
+
     if not isRadian:
         z = ((np.pi)/180.) * z
         y = ((np.pi)/180.) * y

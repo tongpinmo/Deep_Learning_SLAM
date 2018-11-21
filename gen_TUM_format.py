@@ -8,9 +8,9 @@ import os
 from kitti_eval.pose_evaluation_utils import *
 
 
-# path = 'NYU_testing_KITTI_Pose_output'
+path = 'NYU_testing_KITTI_Pose_output'
 # path = 'TUM_testing_KITTI_Pose_output'
-path = '../SfMlearner/KITTI_testing_Pose_output'
+# path = '../SfMlearner/KITTI_testing_Pose_output'
 
 files = os.listdir(path)
 # print('files_length:',len(files))
@@ -25,8 +25,7 @@ def TUM_vec_to_Tmat(R,t):
     return Tmat
 
 
-with open('trajectory_SfMlearner.txt','w') as tf:
-
+with open('trajectory.txt','w') as tf:
 
     for file in files:
 
