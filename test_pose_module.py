@@ -13,30 +13,71 @@ from kitti_eval.pose_evaluation_utils import dump_pose_seq_TUM
 import matplotlib.pyplot as plt
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 1, "The size of of a sample batch")
+flags.DEFINE_integer("batch_size", 1, "The size  of a sample batch")
 flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
 flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
-flags.DEFINE_integer("test_seq", 9, "Sequence id to test")
-flags.DEFINE_string("dataset_dir", 'KITTI/odometry/color/', "Dataset directory")
-flags.DEFINE_string("output_dir", 'NYU_testing_KITTI_Pose_output/', "Output directory")
+flags.DEFINE_string("output_dir", 'deepSLAMpose_output/', "Output directory")
 flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-19950', "checkpoint file")
 FLAGS = flags.FLAGS
 
+
+def get_pose(img0, img1, img2):
+
+    sfm = SfMLearner()                  #__init__
+    sfm.setup_inference(FLAGS.img_height,
+                        FLAGS.img_width,
+                        'pose',
+                        FLAGS.seq_length)
+    saver = tf.train.Saver([var for var in tf.trainable_variables()])
+
+    if not os.path.isdir(FLAGS.output_dir):
+        os.makedirs(FLAGS.output_dir)
+    max_src_offset = (FLAGS.seq_length - 1)//2  #1
+    with tf.Session() as sess:
+        saver.restore(sess, FLAGS.ckpt_file)
+            # TODO: currently assuming batch_size = 1
+        tgt_idx = 1
+        image_seq = load_image_sequence(img0,
+                                        img1,
+                                        img2,
+                                        tgt_idx,
+                                        FLAGS.seq_length,
+                                        FLAGS.img_height,
+                                        FLAGS.img_width)
+        # print('image_seq.shape',image_seq.shape)                      #(128, 1248, 3)
+        # 传入data,feed_dict={}
+        pred = sfm.inference(image_seq[None, :, :, :], sess, mode='pose')       #an dictionary
+        # print('pred_poses.array:',pred['pose'])
+        # print('pred_poses.array:', pred['pose'].shape)                  #shape(1,2,6)
+        pred_poses = pred['pose'][0]   # dictionary to ndarray
+        # print('pred_poses.shape:',pred_poses.shape)                   #shape(2,6)
+        # Insert the target pose [0, 0, 0, 0, 0, 0]
+        pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  # the target image is the reference
+        # print('pred_poses',pred_poses)
+        # print('pred_poses[0]:',pred_poses[0])
+
+
+        out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
+        dump_pose_seq_TUM(out_file, pred_poses)
+
+
 #arrange three images into a sequence
-def load_image_sequence(dataset_dir,
-                        frames,
+def load_image_sequence(img0,
+                        img1,
+                        img2,
                         tgt_idx,
                         seq_length,
                         img_height,
                         img_width):
+    img = [img0,img1,img2]
+    # print('img:',img)
     half_offset = int((seq_length - 1)/2)
     for o in range(-half_offset, half_offset+1):
+        tgt_idx = 1
         curr_idx = tgt_idx + o
-        curr_drive, curr_frame_id = frames[curr_idx].split(' ')
-        img_file = os.path.join(
-            dataset_dir, 'sequences', '%s/image_2/%s.png' % (curr_drive, curr_frame_id))
-        curr_img = scipy.misc.imread(img_file)
+
+        curr_img = img[curr_idx]
 
         curr_img = scipy.misc.imresize(curr_img, (img_height, img_width)) #调整图像尺寸
 
@@ -63,68 +104,21 @@ def is_valid_sample(frames, tgt_idx, seq_length):
         return True
     return False
 
-def main():
-    sfm = SfMLearner()                  #__init__
-    sfm.setup_inference(FLAGS.img_height,
-                        FLAGS.img_width,
-                        'pose',
-                        FLAGS.seq_length)
-    saver = tf.train.Saver([var for var in tf.trainable_variables()])
 
-    if not os.path.isdir(FLAGS.output_dir):
-        os.makedirs(FLAGS.output_dir)
-    seq_dir = os.path.join(FLAGS.dataset_dir, 'sequences', '%.2d' % FLAGS.test_seq)
-    img_dir = os.path.join(seq_dir, 'image_2')
-    N = len(glob(img_dir + '/*.png'))
-    test_frames = ['%.2d %.6d' % (FLAGS.test_seq, n) for n in range(N)]
-    with open(FLAGS.dataset_dir + 'sequences/%.2d/times.txt' % FLAGS.test_seq, 'r') as f:
-        times = f.readlines()   #list
-    times = np.array([float(s[:-1]) for s in times])
-    max_src_offset = (FLAGS.seq_length - 1)//2  #1
-    with tf.Session() as sess:
-        saver.restore(sess, FLAGS.ckpt_file)
-        for tgt_idx in range(N):
-            if not is_valid_sample(test_frames, tgt_idx, FLAGS.seq_length):     #tgt_idx=0跳出当前循环
-                continue
-            if tgt_idx % 100 == 0:
-                print('Progress: %d/%d' % (tgt_idx, N))
-            # TODO: currently assuming batch_size = 1
-            image_seq = load_image_sequence(FLAGS.dataset_dir,
-                                            test_frames,
-                                            tgt_idx,
-                                            FLAGS.seq_length,
-                                            FLAGS.img_height,
-                                            FLAGS.img_width)
-            # print('image_seq.shape',image_seq.shape)                      #(128, 1248, 3)
-            # 传入data,feed_dict={}
-            pred = sfm.inference(image_seq[None, :, :, :], sess, mode='pose')       #an dictionary
-            # print('pred_poses.array:',pred['pose'])
-            # print('pred_poses.array:', pred['pose'].shape)                  #shape(1,2,6)
-            pred_poses = pred['pose'][0]   # dictionary to ndarray
-            # print('pred_poses.shape:',pred_poses.shape)                   #shape(2,6)
-            # Insert the target pose [0, 0, 0, 0, 0, 0]
-            pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  # the target image is the reference
-            # print('pred_poses',pred_poses)
-            # print('pred_poses[0]:',pred_poses[0])
-            curr_times = times[tgt_idx - max_src_offset:tgt_idx + max_src_offset + 1]
-            # print(type(curr_times))
-            out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
-            dump_pose_seq_TUM(out_file, pred_poses, curr_times)
-
-def dump_pose_seq_TUM(out_file, poses, times):
+def dump_pose_seq_TUM(out_file, poses):
     # First frame as the origin
     first_pose = pose_vec_to_mat(poses[0])
     # print('first_pose:',first_pose)
     with open(out_file, 'w') as f:
-        for p in range(len(times)):
+        for p in range(3):
             this_pose = pose_vec_to_mat(poses[p])
-            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                    #FIXME：change teh转到第一帧(t-1)基准上来
+            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change teh转到第一帧(t-1)基准上来
             tx = this_pose[0, 3]
             ty = this_pose[1, 3]
             tz = this_pose[2, 3]
             rot = this_pose[:3, :3]
             qw, qx, qy, qz = rot2quat(rot)
-            f.write('%f %f %f %f %f %f %f %f\n' % (times[p], tx, ty, tz, qx, qy, qz, qw))
+            f.write('%f %f %f %f %f %f %f\n' % (tx, ty, tz, qx, qy, qz, qw))
 
 def pose_vec_to_mat(vec):
     tx = vec[0]
@@ -309,7 +303,7 @@ def euler2quat(z=0, y=0, x=0, isRadian=True):
         cx * cy * sz + sx * cz * sy])
 
 
-main()
+
 
 
 

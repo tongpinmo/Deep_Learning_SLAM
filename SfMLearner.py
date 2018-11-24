@@ -265,6 +265,7 @@ class SfMLearner(object):
             self.img_height, self.img_width * self.seq_length, 3], 
             name='raw_input')                                           #shape(1,128,416*3,3)
         input_mc = self.preprocess_image(input_uint8)                   #shape(1,128,416*3,3)
+        # print('input_mc.shape:',input_mc.shape)
         # input_mc = tf.Print(input_mc,[input_mc.shape],message='input_mc')
         loader = DataLoader()
         tgt_image, src_image_stack = \
@@ -274,7 +275,7 @@ class SfMLearner(object):
         with tf.name_scope("pose_prediction"):
             pred_poses, _, _ = pose_exp_net(
                 tgt_image, src_image_stack, do_exp=False, is_training=False)
-            print('pred_poses:',pred_poses)
+            # print('pred_poses:',pred_poses)
             # tf.Print(pred_poses,[pred_poses.shape],message='pred_poses')         #shape(1,2,6)
             self.inputs = input_uint8
             self.pred_poses = pred_poses

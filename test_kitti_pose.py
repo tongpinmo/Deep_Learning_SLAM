@@ -13,7 +13,7 @@ from kitti_eval.pose_evaluation_utils import dump_pose_seq_TUM
 import matplotlib.pyplot as plt
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 1, "The size of of a sample batch")
+flags.DEFINE_integer("batch_size", 1, "The size of a sample batch")
 flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
 flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
@@ -78,6 +78,7 @@ def main():
     img_dir = os.path.join(seq_dir, 'image_2')
     N = len(glob(img_dir + '/*.png'))
     test_frames = ['%.2d %.6d' % (FLAGS.test_seq, n) for n in range(N)]
+    print('test_frames:',test_frames)
     with open(FLAGS.dataset_dir + 'sequences/%.2d/times.txt' % FLAGS.test_seq, 'r') as f:
         times = f.readlines()   #list
     times = np.array([float(s[:-1]) for s in times])
@@ -97,6 +98,7 @@ def main():
                                             FLAGS.img_height, 
                                             FLAGS.img_width)
             # print('image_seq.shape',image_seq.shape)                      #(128, 1248, 3)
+            # print('image_seq:',image_seq)
             # 传入data,feed_dict={}
             pred = sfm.inference(image_seq[None, :, :, :], sess, mode='pose')       #an dictionary
             # print('pred_poses.array:',pred['pose'])
