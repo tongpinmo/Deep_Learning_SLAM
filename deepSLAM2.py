@@ -8,18 +8,7 @@ import math
 import scipy.misc
 import tensorflow as tf
 import numpy as np
-from glob import glob
-from SfMLearner import SfMLearner
-from kitti_eval.pose_evaluation_utils import dump_pose_seq_TUM
-import matplotlib.pyplot as plt
 
-# flags = tf.app.flags
-# flags.DEFINE_integer("img_height", 128, "Image height")
-# flags.DEFINE_integer("img_width", 416, "Image width")
-# flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
-# flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-19950', "checkpoint file")
-# flags.DEFINE_string("output_dir", 'deepSLAMpose_output/', "Output directory")
-# FLAGS = flags.FLAGS
 
 class DeepGSLAM(gs.SLAM):
     def type(self):
@@ -57,13 +46,13 @@ class GObjectHandle(gs.GObjectHandle):
         print("Pose:",obj.getPose())
 
 
-slam=DeepGSLAM()
-dataset=gs.Dataset()
+slam = DeepGSLAM()
+dataset = gs.Dataset()
 dataset.open("/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_sitting_xyz/.tumrgbd")
 
-callback=GObjectHandle()
+callback = GObjectHandle()
 slam.setCallback(callback)
-fr=dataset.grabFrame()
+fr = dataset.grabFrame()
 
 sequence_len = 3
 index_img = 0
@@ -74,12 +63,14 @@ seq_img = [0, 0, 0]
 
 while(fr):
     seq_img[index_img] = slam.track(fr)
-    fr=dataset.grabFrame()
+    # print('index_img:',index_img)
+    # print('seq_img[index_img]:',seq_img[index_img])
+    fr = dataset.grabFrame()
+    # print('fr.id():', fr.id())
     index_img = index_img + 1
     if index_img == sequence_len:
         index_img = 0
         # print('seq_img[0]',seq_img[0])
-        # pose = get_pose(seq_img[0], seq_img[1], seq_img[2],sess,sfm,FLAGS)
         pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
 
 
@@ -99,8 +90,8 @@ while(fr):
 #         # call the pose function
 #         pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
 #         indicate = 1
-#
-#
+
+
 
 
 
