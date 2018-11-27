@@ -245,21 +245,6 @@ class SfMLearner(object):
                 if step % self.steps_per_epoch == 0:
                     self.save(sess, opt.checkpoint_dir, gs)
 
-    def build_depth_test_graph(self):
-        input_uint8 = tf.placeholder(tf.uint8, [self.batch_size,
-                    self.img_height, self.img_width, 3], name='raw_input')
-        input_mc = self.preprocess_image(input_uint8)
-        with tf.name_scope("depth_prediction"):
-            pred_disp, depth_net_endpoints = disp_net(
-                input_mc, is_training=False)
-            # print(pred_disp)
-            pred_depth = [1./disp for disp in pred_disp]  #逆深度
-        pred_depth = pred_depth[0]     #Tensor  shape:[1,128,416,1]
-        #print 'pre_depth',pred_depth
-        self.inputs = input_uint8
-        self.pred_depth = pred_depth
-        self.depth_epts = depth_net_endpoints
-
     def build_pose_test_graph(self):
         input_uint8 = tf.placeholder(tf.uint8, [self.batch_size, 
             self.img_height, self.img_width * self.seq_length, 3], 

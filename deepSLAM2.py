@@ -1,7 +1,25 @@
 import gslam as gs
 import numpy as np
+import os
 from PIL import Image
-from test_pose_module1 import *
+from test_pose_module2 import *
+import os
+import math
+import scipy.misc
+import tensorflow as tf
+import numpy as np
+from glob import glob
+from SfMLearner import SfMLearner
+from kitti_eval.pose_evaluation_utils import dump_pose_seq_TUM
+import matplotlib.pyplot as plt
+
+# flags = tf.app.flags
+# flags.DEFINE_integer("img_height", 128, "Image height")
+# flags.DEFINE_integer("img_width", 416, "Image width")
+# flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
+# flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-19950', "checkpoint file")
+# flags.DEFINE_string("output_dir", 'deepSLAMpose_output/', "Output directory")
+# FLAGS = flags.FLAGS
 
 class DeepGSLAM(gs.SLAM):
     def type(self):
@@ -38,6 +56,7 @@ class GObjectHandle(gs.GObjectHandle):
     def handle(self,obj):
         print("Pose:",obj.getPose())
 
+
 slam=DeepGSLAM()
 dataset=gs.Dataset()
 dataset.open("/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_sitting_xyz/.tumrgbd")
@@ -50,6 +69,7 @@ sequence_len = 3
 index_img = 0
 seq_img = [0, 0, 0]
 
+
 # 3 frames as input
 
 while(fr):
@@ -58,9 +78,10 @@ while(fr):
     index_img = index_img + 1
     if index_img == sequence_len:
         index_img = 0
-     # call the pose function
-     #    print('seq_img[0]',seq_img[0])
-        pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
+        # print('seq_img[0]',seq_img[0])
+        # pose = get_pose(seq_img[0], seq_img[1], seq_img[2],sess,sfm,FLAGS)
+        pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
+
 
 
 #continuous frames as input
@@ -80,6 +101,7 @@ while(fr):
 #         indicate = 1
 #
 #
+
 
 
 
