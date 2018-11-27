@@ -60,36 +60,41 @@ seq_img = [0, 0, 0]
 
 
 # 3 frames as input
-
-while(fr):
-    seq_img[index_img] = slam.track(fr)
-    # print('index_img:',index_img)
-    # print('seq_img[index_img]:',seq_img[index_img])
-    fr = dataset.grabFrame()
-    # print('fr.id():', fr.id())
-    index_img = index_img + 1
-    if index_img == sequence_len:
-        index_img = 0
-        # print('seq_img[0]',seq_img[0])
-        pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
+#
+# while(fr):
+#     seq_img[index_img] = slam.track(fr)
+#     # print('index_img:',index_img)
+#     # print('seq_img[index_img]:',seq_img[index_img])
+#     fr = dataset.grabFrame()
+#     # print('fr.id():', fr.id())
+#     index_img = index_img + 1
+#     if index_img == sequence_len:
+#         index_img = 0
+#         # print('seq_img[0]',seq_img[0])
+#         pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
 
 
 
 #continuous frames as input
 
-# indicate = 0
-# while (fr):
-#     seq_img[index_img] = slam.track(fr)
-#     fr = dataset.grabFrame()
-#     index_img = index_img + 1
-#     if index_img == sequence_len:
-#         index_img = 0
-#         if indicate > 0:
-#             seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
-#
-#         # call the pose function
-#         pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
-#         indicate = 1
+indicate = 0
+index = 0
+while (fr):
+    seq_img[index_img] = slam.track(fr)
+    print('index_img:',index_img)
+    print('seq_img[index_img]:',seq_img[index_img])
+    fr = dataset.grabFrame()
+    print('fr:',fr)
+    index_img = index_img + 1
+    index = index + 1
+    if index >= sequence_len:
+        index_img = 0
+        if indicate > 0:
+            seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
+
+        # call the pose function
+        pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
+        indicate = 1
 
 
 

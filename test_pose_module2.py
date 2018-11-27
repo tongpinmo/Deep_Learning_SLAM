@@ -127,7 +127,7 @@ def dump_pose_seq_TUM(out_file, poses):
             tz = this_pose[2, 3]
             rot = this_pose[:3, :3]
             qw, qx, qy, qz = rot2quat(rot)
-            print('tx,ty,tz,qx,qy,qz,qw :',tx,ty,tz,qx,qy,qz,qw)
+            # print('tx,ty,tz,qx,qy,qz,qw :',tx,ty,tz,qx,qy,qz,qw)
             f.write('%f %f %f %f %f %f %f\n' % (tx, ty, tz, qx, qy, qz, qw))
 
 def pose_vec_to_mat(vec):
