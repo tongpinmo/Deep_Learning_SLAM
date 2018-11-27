@@ -74,26 +74,34 @@ seq_img = [0, 0, 0]
 #         pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
 
 
-
 #continuous frames as input
 
 indicate = 0
 index = 0
+index_img = 0
+times = []
+
 while (fr):
     seq_img[index_img] = slam.track(fr)
-    print('index_img:',index_img)
-    print('seq_img[index_img]:',seq_img[index_img])
+    # print('index_img:', index_img)
     fr = dataset.grabFrame()
-    print('fr:',fr)
+    timestamp = fr.timestamp()
+    print('fr.timestamp:',timestamp)
+    times.append(timestamp)
+    print('times:',times)
     index_img = index_img + 1
+    # print('index_img:', index_img)
     index = index + 1
+    print('index:',index)
     if index >= sequence_len:
         index_img = 0
         if indicate > 0:
             seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
+            # times[0],times[1],times[2] = times[1],times[2],times[0]
 
+        #set the new frame in the seq_img[0]
         # call the pose function
-        pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
+        pose = get_pose(seq_img[0], seq_img[1], seq_img[2],index)
         indicate = 1
 
 

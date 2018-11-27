@@ -37,16 +37,17 @@ saver = tf.train.Saver([var for var in tf.trainable_variables()])
 sess = tf.Session()
 saver.restore(sess, FLAGS.ckpt_file)
 
-#
-# with tf.Session() as sess: #这种方式会自动关闭session
+##这种方式会自动关闭session
+# with tf.Session() as sess:
 #     saver.restore(sess, FLAGS.ckpt_file)
 
-def get_pose(img0, img1, img2):
+def get_pose(img0, img1, img2,index):
 
-    max_src_offset = (FLAGS.seq_length - 1)//2  #1
+    max_src_offset = (FLAGS.seq_length - 1)//2   #1
 
     # TODO: currently assuming batch_size = 1
-    tgt_idx = 1
+    tgt_idx = index-2
+    print('tgt_idx:',tgt_idx)
     image_seq = load_image_sequence(img0,
                                     img1,
                                     img2,
@@ -65,8 +66,7 @@ def get_pose(img0, img1, img2):
     pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  # the target image is the reference
     # print('pred_poses',pred_poses)
     # print('pred_poses[0]:',pred_poses[0])
-
-
+    # curr_times = times[0:3]
     out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
     dump_pose_seq_TUM(out_file, pred_poses)
 
