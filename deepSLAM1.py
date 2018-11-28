@@ -2,7 +2,7 @@ import gslam as gs
 import numpy as np
 import os
 from PIL import Image
-from test_pose_module2 import *
+from test_pose_module1 import *
 import os
 import math
 import scipy.misc
@@ -21,7 +21,7 @@ class DeepGSLAM(gs.SLAM):
         self.config=var;
     def setCallback(self,cbk):
         self.callback=cbk;
-    def track(self,fr):
+    def get_image(self,fr):
         image=fr.getImage(0)
         print("Processing frame ",fr.id(),"time:",fr.timestamp())
 
@@ -59,37 +59,38 @@ index_img = 0
 seq_img = [0, 0, 0]
 
 
-# 3 frames as input
-
-while(fr):
-    seq_img[index_img] = slam.track(fr)
-    # print('index_img:',index_img)
-    # print('seq_img[index_img]:',seq_img[index_img])
-    fr = dataset.grabFrame()
-    # print('fr.id():', fr.id())
-    index_img = index_img + 1
-    if index_img == sequence_len:
-        index_img = 0
-        # print('seq_img[0]',seq_img[0])
-        pose = get_pose(seq_img[0],seq_img[1],seq_img[2])
-
-
 
 #continuous frames as input
 
-# indicate = 0
-# while (fr):
-#     seq_img[index_img] = slam.track(fr)
-#     fr = dataset.grabFrame()
-#     index_img = index_img + 1
-#     if index_img == sequence_len:
-#         index_img = 0
-#         if indicate > 0:
-#             seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
-#
-#         # call the pose function
-#         pose = get_pose(seq_img[0], seq_img[1], seq_img[2])
-#         indicate = 1
+indicate = 0
+index = 0
+index_img = 0
+times = [0,0,0]
+
+while (fr):
+    seq_img[index_img] = slam.get_image(fr)
+    # print('index_img:', index_img)
+    times[index_img] = fr.timestamp()
+    # print('fr.timestamp:',times)
+    index_img = index_img + 1
+    # print('index_img:', index_img)
+    index = index + 1
+    # print('index:',index)
+    if index >= sequence_len:
+        index_img = 0
+        if indicate > 0:
+            # set the new frame in the seq_img[0],new timestamp in time[0]
+            seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
+            times[0],times[1],times[2] = times[1],times[2],times[0]
+
+
+        # call the pose function
+        pose = get_pose(seq_img,index,times)
+        print('times:',times)
+        indicate = 1
+
+
+    fr = dataset.grabFrame()
 
 
 

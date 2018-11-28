@@ -41,16 +41,14 @@ saver.restore(sess, FLAGS.ckpt_file)
 # with tf.Session() as sess:
 #     saver.restore(sess, FLAGS.ckpt_file)
 
-def get_pose(img0, img1, img2,index):
+def get_pose(img,index,times):
 
     max_src_offset = (FLAGS.seq_length - 1)//2   #1
 
     # TODO: currently assuming batch_size = 1
     tgt_idx = index-2
     print('tgt_idx:',tgt_idx)
-    image_seq = load_image_sequence(img0,
-                                    img1,
-                                    img2,
+    image_seq = load_image_sequence(img,
                                     tgt_idx,
                                     FLAGS.seq_length,
                                     FLAGS.img_height,
@@ -68,18 +66,15 @@ def get_pose(img0, img1, img2,index):
     # print('pred_poses[0]:',pred_poses[0])
     # curr_times = times[0:3]
     out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
-    dump_pose_seq_TUM(out_file, pred_poses)
+    dump_pose_seq_TUM(out_file, pred_poses,times)
 
 
 #arrange three images into a sequence
-def load_image_sequence(img0,
-                        img1,
-                        img2,
+def load_image_sequence(img,
                         tgt_idx,
                         seq_length,
                         img_height,
                         img_width):
-    img = [img0,img1,img2]
     # print('img:',img)
     half_offset = int((seq_length - 1)/2)
     for o in range(-half_offset, half_offset+1):
@@ -114,12 +109,12 @@ def is_valid_sample(frames, tgt_idx, seq_length):
     return False
 
 
-def dump_pose_seq_TUM(out_file, poses):
+def dump_pose_seq_TUM(out_file, poses,times):
     # First frame as the origin
     first_pose = pose_vec_to_mat(poses[0])
     # print('first_pose:',first_pose)
     with open(out_file, 'w') as f:
-        for p in range(3):
+        for p in range(len(times)):
             this_pose = pose_vec_to_mat(poses[p])
             this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change teh转到第一帧(t-1)基准上来
             tx = this_pose[0, 3]
@@ -128,7 +123,7 @@ def dump_pose_seq_TUM(out_file, poses):
             rot = this_pose[:3, :3]
             qw, qx, qy, qz = rot2quat(rot)
             # print('tx,ty,tz,qx,qy,qz,qw :',tx,ty,tz,qx,qy,qz,qw)
-            f.write('%f %f %f %f %f %f %f\n' % (tx, ty, tz, qx, qy, qz, qw))
+            f.write('%f %f %f %f %f %f %f %f\n' % (times[p],tx, ty, tz, qx, qy, qz, qw))
 
 def pose_vec_to_mat(vec):
     tx = vec[0]
