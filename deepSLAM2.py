@@ -37,7 +37,7 @@ class DeepGSLAM(gs.SLAM):
 
 
         #fr.setImage(0,depth)
-        #fr.setPose(gs.SE3())
+        # fr.setPose(gs.SE3(tx,ty,tz,qx,qy,qz,qw))
         self.callback.handle(fr)
         return image_np
 
@@ -48,7 +48,7 @@ class GObjectHandle(gs.GObjectHandle):
 
 slam = DeepGSLAM()
 dataset = gs.Dataset()
-dataset.open("/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_sitting_xyz/.tumrgbd")
+dataset.open("/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg1_360/.tumrgbd")
 
 callback = GObjectHandle()
 slam.setCallback(callback)

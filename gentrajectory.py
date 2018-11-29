@@ -9,6 +9,7 @@ from mpl_toolkits.mplot3d import Axes3D
 #这种方式是直接画出轨迹，公式参考slam14-Page42,没有使用TUM的标准格式
 
 path = 'NYU_testing_KITTI_Pose_output'
+# path = 'deepSLAMpose_output'
 
 # path = 'TUM_testing_KITTI_Pose_output'
 files = os.listdir(path)
@@ -58,8 +59,8 @@ figure = plt.figure()
 ax = figure.add_subplot(111,projection ='3d')
 ax.plot(x, y, z)
 
-#ax = figure.add_subplot(111)
-#ax.plot(x, z)
+# ax = figure.add_subplot(111)
+# ax.plot(x, z)
 
 plt.xlabel('x')
 plt.ylabel('y')

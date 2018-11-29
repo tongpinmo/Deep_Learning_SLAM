@@ -22,7 +22,7 @@ flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-19950', "checkpoint file
 flags.DEFINE_string("output_dir", 'deepSLAMpose_output/', "Output directory")
 FLAGS = flags.FLAGS
 
-
+#load the checkpoint file
 sfm = SfMLearner()  # __init__
 sfm.setup_inference(FLAGS.img_height,
                     FLAGS.img_width,

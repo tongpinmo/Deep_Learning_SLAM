@@ -8,7 +8,8 @@ import os
 from kitti_eval.pose_evaluation_utils import *
 
 
-path = 'NYU_testing_KITTI_Pose_output'
+# path = 'NYU_testing_KITTI_Pose_output'
+path = 'deepSLAMpose_output'
 # path = 'TUM_testing_KITTI_Pose_output'
 # path = '../SfMlearner/KITTI_testing_Pose_output'
 
@@ -25,14 +26,15 @@ def TUM_vec_to_Tmat(R,t):
     return Tmat
 
 
-with open('trajectory.txt','w') as tf:
+with open('trajectory_deepslam.txt','w') as tf:
 
     for file in files:
 
         with open(path + '/' + file) as f:
             lines = f.readlines()
+            lines0 = lines[0].strip()
             lines = lines[1].strip()
-            # print('lines[1]',type(lines))
+            # print('lines[0]',lines[0].strip())
             time = float(lines.split(' ')[0])
 
             # time = map(float, time)
@@ -55,29 +57,32 @@ with open('trajectory.txt','w') as tf:
             Tmat = TUM_vec_to_Tmat(R, t)
             # print('Tmat:',Tmat)
 
-        if (file.split('.')[0] == '000000'):
-            # print(type(tx))
-            tx = float(tx)
-            ty = float(ty)
-            tz = float(tz)
-            qx = float(qx)
-            qy = float(qy)
-            qz = float(qz)
-            qw = float(qw)
+            if (file.split('.')[0] == '000000'):
+                # print(type(tx))
+                tx = float(tx)
+                ty = float(ty)
+                tz = float(tz)
+                qx = float(qx)
+                qy = float(qy)
+                qz = float(qz)
+                qw = float(qw)
 
-            tf.write('%f %f %f %f %f %f %f %f\n' % (0.000000, 0.000000, 0.000000,-0.000000, 0.000000, -0.000000,-0.000000,1.000000))
-            tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
-            this_pose = Tmat
+                # the first line
+                tf.write(lines0)
+                tf.write('\n')
 
-        else:
-            this_pose = np.dot(Tmat,this_pose)
-            # print('this_pose:',this_pose)
-            tx = this_pose[0, 3]
-            ty = this_pose[1, 3]
-            tz = this_pose[2, 3]
-            rot = this_pose[:3, :3]
-            qw, qx, qy, qz = rot2quat(rot)
-            tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
+                tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
+                this_pose = Tmat
+
+            else:
+                this_pose = np.dot(Tmat,this_pose)
+                # print('this_pose:',this_pose)
+                tx = this_pose[0, 3]
+                ty = this_pose[1, 3]
+                tz = this_pose[2, 3]
+                rot = this_pose[:3, :3]
+                qw, qx, qy, qz = rot2quat(rot)
+                tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
 
 
 
