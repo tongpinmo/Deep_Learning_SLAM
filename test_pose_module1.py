@@ -116,7 +116,7 @@ def dump_pose_seq_TUM(out_file, poses,times):
     with open(out_file, 'w') as f:
         for p in range(len(times)):
             this_pose = pose_vec_to_mat(poses[p])
-            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change teh转到第一帧(t-1)基准上来
+            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change frames into t-1 base
             tx = this_pose[0, 3]
             ty = this_pose[1, 3]
             tz = this_pose[2, 3]

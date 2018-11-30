@@ -9,9 +9,10 @@ import tensorflow as tf
 import numpy as np
 from glob import glob
 from SfMLearner import SfMLearner
-from kitti_eval.pose_evaluation_utils import dump_pose_seq_TUM
+from kitti_eval.pose_evaluation_utils import *
 import matplotlib.pyplot as plt
 import functools
+
 
 flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 1, "The size  of a sample batch")
@@ -41,13 +42,12 @@ saver.restore(sess, FLAGS.ckpt_file)
 # with tf.Session() as sess:
 #     saver.restore(sess, FLAGS.ckpt_file)
 
-def get_pose(img,index,times):
+def get_pose(img,times,index):
 
     max_src_offset = (FLAGS.seq_length - 1)//2   #1
 
+    tgt_idx = 1
     # TODO: currently assuming batch_size = 1
-    tgt_idx = index-2
-    print('tgt_idx:',tgt_idx)
     image_seq = load_image_sequence(img,
                                     tgt_idx,
                                     FLAGS.seq_length,
@@ -64,9 +64,55 @@ def get_pose(img,index,times):
     pred_poses = np.insert(pred_poses, max_src_offset, np.zeros((1,6)), axis=0)  # the target image is the reference
     # print('pred_poses',pred_poses)
     # print('pred_poses[0]:',pred_poses[0])
-    # curr_times = times[0:3]
-    out_file = FLAGS.output_dir + '%.6d.txt' % (tgt_idx - max_src_offset)
-    dump_pose_seq_TUM(out_file, pred_poses,times)
+    poses = dump_pose_seq_TUM(pred_poses,times)
+    pose_final = gen_TUM_format_pose(poses,index)
+
+    return pose_final
+
+
+def gen_TUM_format_pose(poses, index):
+    time = poses[1][0]
+    print('time:',time)
+    tx = poses[1][1]
+    ty = poses[1][2]
+    tz = poses[1][3]
+    qx = poses[1][4]
+    qy = poses[1][5]
+    qz = poses[1][6]
+    qw = poses[1][7]
+
+    quat = np.array([qw, qx, qy, qz])
+    R = quat2mat(quat)  # shape(3,3)
+
+    t = np.array([tx, ty, tz])
+    t = t.reshape(3, 1)
+
+    Tmat = TUM_vec_to_Tmat(R, t)
+    # print('Tmat:',Tmat)
+    
+    if (index == 3):
+        print('poses[0]:',poses[0])
+        print('poses[1]:',poses[1])
+        pose_final = poses[0]
+        pose_final.append(poses[1])
+        global this_pose
+        this_pose = Tmat
+
+        
+    else:
+
+        this_pose = np.dot(Tmat,this_pose)
+        # print('this_pose:',this_pose)
+        tx = this_pose[0, 3]
+        ty = this_pose[1, 3]
+        tz = this_pose[2, 3]
+        rot = this_pose[:3, :3]
+        qw, qx, qy, qz = rot2quat(rot)
+
+        pose_final = [time,tx,ty,tz,qx,qy,qz,qw]
+
+    return pose_final
+
 
 
 #arrange three images into a sequence
@@ -109,21 +155,36 @@ def is_valid_sample(frames, tgt_idx, seq_length):
     return False
 
 
-def dump_pose_seq_TUM(out_file, poses,times):
+def dump_pose_seq_TUM(pred_poses,times):
     # First frame as the origin
-    first_pose = pose_vec_to_mat(poses[0])
+    first_pose = pose_vec_to_mat(pred_poses[0])
     # print('first_pose:',first_pose)
-    with open(out_file, 'w') as f:
-        for p in range(len(times)):
-            this_pose = pose_vec_to_mat(poses[p])
-            this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change teh转到第一帧(t-1)基准上来
-            tx = this_pose[0, 3]
-            ty = this_pose[1, 3]
-            tz = this_pose[2, 3]
-            rot = this_pose[:3, :3]
-            qw, qx, qy, qz = rot2quat(rot)
-            # print('tx,ty,tz,qx,qy,qz,qw :',tx,ty,tz,qx,qy,qz,qw)
-            f.write('%f %f %f %f %f %f %f %f\n' % (times[p],tx, ty, tz, qx, qy, qz, qw))
+    poses = []
+    for p in range(len(times)):
+        this_pose = pose_vec_to_mat(pred_poses[p])
+        this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change other frame into t-1 base
+        tx = this_pose[0, 3]
+        ty = this_pose[1, 3]
+        tz = this_pose[2, 3]
+        rot = this_pose[:3, :3]
+        qw, qx, qy, qz = rot2quat(rot)
+        # print('times,tx,ty,tz,qx,qy,qz,qw :',times[p],tx,ty,tz,qx,qy,qz,qw)
+        re_pose = [times[p], tx, ty, tz, qx, qy, qz, qw]
+        # print('re_pose:', re_pose)
+        poses.append(re_pose)
+    # print('poses:',poses)
+    # print('pose[0]:',poses[0])
+    # print('poses[1]:',poses[1])
+    # print('pose[2]:',poses[2])
+    return poses
+
+#将Poses(tx,ty,tz,qx,qy,qz,qw)转化成4*4的变换矩阵T
+def TUM_vec_to_Tmat(R,t):
+
+    Tmat = np.concatenate((R,t), axis=1) # shape(3,4)
+    hfiller = np.array([0, 0, 0, 1]).reshape((1,4))
+    Tmat = np.concatenate((Tmat, hfiller), axis=0)
+    return Tmat
 
 def pose_vec_to_mat(vec):
     tx = vec[0]

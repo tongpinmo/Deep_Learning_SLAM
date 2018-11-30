@@ -32,12 +32,12 @@ with open('trajectory_deepslam.txt','w') as tf:
 
         with open(path + '/' + file) as f:
             lines = f.readlines()
+            # print('lines1', type(lines[1]))
             lines0 = lines[0].strip()
             lines = lines[1].strip()
-            # print('lines[0]',lines[0].strip())
             time = float(lines.split(' ')[0])
 
-            # time = map(float, time)
+            #
             tx = lines.split(' ')[1]
             ty = lines.split(' ')[2]
             tz = lines.split(' ')[3]
@@ -70,7 +70,7 @@ with open('trajectory_deepslam.txt','w') as tf:
                 # the first line
                 tf.write(lines0)
                 tf.write('\n')
-
+                # the second line
                 tf.write('%f %f %f %f %f %f %f %f\n' % (time, tx, ty, tz, qx, qy, qz, qw))
                 this_pose = Tmat
 

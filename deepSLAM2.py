@@ -43,7 +43,7 @@ class DeepGSLAM(gs.SLAM):
 
 class GObjectHandle(gs.GObjectHandle):
     def handle(self,obj):
-        print("Pose:",obj.getPose())
+        print("Pose_getslam:",obj.getPose())
 
 
 slam = DeepGSLAM()
@@ -75,7 +75,7 @@ while (fr):
     index_img = index_img + 1
     # print('index_img:', index_img)
     index = index + 1
-    # print('index:',index)
+    print('index:',index)
     if index >= sequence_len:
         index_img = 0
         if indicate > 0:
@@ -85,8 +85,8 @@ while (fr):
 
 
         # call the pose function
-        pose = get_pose(seq_img,index,times)
-        print('times:',times)
+        pose = get_pose(seq_img,times,fr.id())
+        print('pose_final:',pose)
         indicate = 1
 
 

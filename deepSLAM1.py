@@ -2,7 +2,7 @@ import gslam as gs
 import numpy as np
 import os
 from PIL import Image
-from test_pose_module2 import *
+from test_pose_module1 import *
 import os
 import math
 import scipy.misc
