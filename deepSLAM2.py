@@ -37,8 +37,6 @@ class DeepGSLAM(gs.SLAM):
 
 
         #fr.setImage(0,depth)
-        # fr.setPose(gs.SE3(tx,ty,tz,qx,qy,qz,qw))
-        self.callback.handle(fr)
         return image_np
 
 class GObjectHandle(gs.GObjectHandle):
@@ -88,6 +86,9 @@ while (fr):
         pose = get_pose(seq_img,times,fr.id())
         print('pose_final:',pose)
         indicate = 1
+    #
+    # fr.setPose(gs.SE3(tx, ty, tz, qx, qy, qz, qw))
+    # self.callback.handle(fr)
 
 
     fr = dataset.grabFrame()

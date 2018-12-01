@@ -91,12 +91,17 @@ def gen_TUM_format_pose(poses, index):
     # print('Tmat:',Tmat)
     
     if (index == 3):
-        print('poses[0]:',poses[0])
-        print('poses[1]:',poses[1])
-        pose_final = poses[0]
-        pose_final.append(poses[1])
-        global this_pose
+        # print('poses[0]:',poses[0])
+        # print('poses[1]:',poses[1])
+        global  this_pose
         this_pose = Tmat
+
+        pose_final = []
+        for i in range(2):
+            pose_final.append(poses[i])
+        return  pose_final
+        # print('pose_final',pose_final)
+
 
         
     else:
@@ -172,7 +177,7 @@ def dump_pose_seq_TUM(pred_poses,times):
         re_pose = [times[p], tx, ty, tz, qx, qy, qz, qw]
         # print('re_pose:', re_pose)
         poses.append(re_pose)
-    # print('poses:',poses)
+    print('poses:',poses)
     # print('pose[0]:',poses[0])
     # print('poses[1]:',poses[1])
     # print('pose[2]:',poses[2])
