@@ -46,6 +46,7 @@ class SfMLearner(object):
 
             pred_disp = Getdepth()
             pred_disp = pred_disp.get_depth_graph()
+            print('pred_disp:',pred_disp)
 
 
             pred_depth = [1./pred_disp]   # 逆深度
@@ -87,7 +88,7 @@ class SfMLearner(object):
             # print('curr_src_image_stack:', curr_src_image_stack)         # (4, 128, 416, 6)
             for i in range(opt.num_source):                     #num_source=2
                 # Inverse warp the source image to the target image frame
-                curr_proj_image = projective_inverse_warp(     #FIXME：此处的输入要分 i ,scale ,因为多尺度
+                curr_proj_image = projective_inverse_warp(
                     curr_src_image_stack[:,:,:,3*i:3*(i+1)],                #shape(4,128,416,3)
                     tf.squeeze(pred_depth[s], axis=3),                      #shape(4,128,416)
                     pred_poses[:,i,:],                                      #pred_poses.shape(4,6)  #todo :要改为两帧的话可以从这里下手

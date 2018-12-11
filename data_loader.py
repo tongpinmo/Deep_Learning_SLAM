@@ -27,7 +27,7 @@ class DataLoader(object):
         seed = random.randint(0, 2**31 - 1)  #integer creating in a particular scope
         # Load the list of training files into queues
         file_list = self.format_file_list(self.dataset_dir, 'train') #读取resulting/formatted/data 下面的train.txt
-        # print('file_list:',file_list)
+        # print('train_file_list:',file_list)
         image_paths_queue = tf.train.string_input_producer(
             file_list['image_file_list'], 
             seed=seed, 

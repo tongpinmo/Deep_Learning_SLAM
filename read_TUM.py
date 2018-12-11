@@ -10,20 +10,6 @@ from joblib import Parallel, delayed
 import tensorflow as tf
 import os
 
-# path = 'raw_data_NYU/Images'
-#
-#
-# def collect_train_frames(path):
-#     all_frames = []  #
-#     # if os.path.isdir(self.date_list):
-#     img_dir = os.path.join(path)
-#     N = len(glob(img_dir + '/*.png'))
-#     for n in range(1,N):
-#         frame_id = '%.d' % n
-#         all_frames.append(path + ' ' + frame_id)
-#     print all_frames
-#
-#
 
 
 path = 'RGBD/rgbd_dataset_freiburg1_360'
@@ -34,12 +20,14 @@ with open(path + '/' + 'associate.txt') as f:
             for lines in f.readlines():
                 lines = lines.split(' ')
                 # print('lines:',lines)
-                depth = lines[1]
-                print('depth:',depth)
-                rgb   = lines[3]
+                rgb   = lines[1]
                 print('rgb:',rgb)
-                df.write('%s\n' % (depth))
-                rf.write('%s' % (rgb)  )
+                depth = lines[3]
+                print('depth:', depth)
+
+
+                rf.write('%s\n' % (rgb))
+                df.write('%s' % (depth))
 
 
 

@@ -27,7 +27,7 @@ class kitti_raw_gtdepth_loader(object):
         all_frames = []  #
         # if os.path.isdir(self.date_list):
         for date in self.date_list:
-            img_dir = os.path.join(self.dataset_dir + date)
+            img_dir = os.path.join(self.dataset_dir +'/'+ date)
             print('Depth_dir:',img_dir)
 
             N = len(glob(img_dir + '/*.png'))

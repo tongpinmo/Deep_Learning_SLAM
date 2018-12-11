@@ -8,6 +8,7 @@ import numpy as np
 from glob import glob
 from joblib import Parallel, delayed
 import os
+import natsort
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, default='RGBD/rgbd_dataset_freiburg1_360', help="where the dataset is stored")
@@ -86,6 +87,7 @@ def main():
     # 路径/resulting /formatted /data/
     with open(args.dump_root + 'train.txt', 'w') as tf:
         imfiles = glob(os.path.join(args.dump_root, 'rgb','*.jpg'))
+        imfiles = natsort.natsorted(imfiles)
         # print('imfiles:',imfiles)
 
         frame_ids = [os.path.basename(fi)[:-4] for fi in imfiles]

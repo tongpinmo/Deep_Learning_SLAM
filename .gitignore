@@ -13,3 +13,5 @@ TUM_testing_KITTI_Pose_output/
 kitti_eval/ground_truth/
 trajectory_SfMlearner.txt
 deepSLAMpose_output/
+data/cifsfe0c
+data/kitti/cifs53af

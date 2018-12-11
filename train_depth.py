@@ -10,7 +10,7 @@ from Getdepth import Getdepth
 import os
 
 
-def get():
+def get_depth():
     seed = 8964
     tf.set_random_seed(seed)
     np.random.seed(seed)
@@ -21,4 +21,4 @@ def get():
 
 
 if __name__ == '__main__':
-    get()
+    get_depth()

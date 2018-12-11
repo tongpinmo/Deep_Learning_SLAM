@@ -14,7 +14,7 @@ class kitti_raw_loader(object):
                  img_height=256,
                  img_width=256,
                  seq_length=3):
-        dir_path = os.path.dirname(os.path.realpath(__file__))   #
+        dir_path = os.path.dirname(os.path.realpath(__file__))      #返回kitti_raw_loader.py文件执行的绝对路径
 
         self.dataset_dir = dataset_dir   #raw_data_NYU
         self.img_height = img_height
@@ -35,13 +35,13 @@ class kitti_raw_loader(object):
             for n in range(1,N+1):
                 frame_id = '%.d' % n
                 all_frames.append(date + ' ' + frame_id)
-        # print all_frames
+        # print("all_frames",all_frames)
 
         self.train_frames = all_frames
         # print('self.train_frames:',self.train_frames)
         # print('type of self.train_frames:', type(self.train_frames))
         self.num_train = len(self.train_frames)                 #2284
-
+        # print('self.num_train:',self.num_train)
 
     def is_valid_sample(self, frames, tgt_idx):
         N = len(frames)
@@ -71,9 +71,12 @@ class kitti_raw_loader(object):
         ## FIXME:resize
         half_offset = int((seq_length - 1)/2) #1
         image_seq = []
+        # print('tgt_idx:',tgt_idx)
         for o in range(-half_offset, half_offset + 1): #range(-1,2)
             curr_idx = tgt_idx + o
+            # print('curr_idx:',curr_idx)
             curr_drive, curr_frame_id = frames[curr_idx].split(' ')
+            # print('curr_drive:', curr_drive, 'curr_frame_id:', curr_frame_id)
             curr_img = self.load_image_raw(curr_drive, curr_frame_id)
             # print curr_img.shape      #(480, 640, 3)
             if o == 0:  #FIXME：求出缩放比例，后面对intrinsics使用
@@ -83,11 +86,14 @@ class kitti_raw_loader(object):
                 # print('zoom_x', zoom_x)
             curr_img = scipy.misc.imresize(curr_img, (self.img_height, self.img_width))  #将原始图片resize为128*416
             image_seq.append(curr_img)  #shape(128,416,3)
-            # print('image_seq:',image_seq)
+        #     print('image_seq:',image_seq)
+        # print('image_seq:',len(image_seq))
         return image_seq, zoom_x, zoom_y
 
     def load_example(self, frames, tgt_idx):
+        # print('tgt_idx:',tgt_idx)
         image_seq, zoom_x, zoom_y = self.load_image_sequence(frames, tgt_idx, self.seq_length)
+        # print('image_seq:', len(image_seq))       #3
         tgt_drive, tgt_frame_id = frames[tgt_idx].split(' ')
         # print('tgt_drive',tgt_drive,'tgt_frame_id',tgt_frame_id)
         intrinsics = self.load_intrinsics_raw(tgt_drive, tgt_frame_id)   #读取 calib_cam_to_cam.txt

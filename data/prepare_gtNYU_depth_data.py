@@ -8,6 +8,7 @@ import numpy as np
 from glob import glob
 from joblib import Parallel, delayed
 import os
+import natsort
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
@@ -29,6 +30,7 @@ def concat_image_seq(seq):
 
 # 读入raw_data_KITTI文件夹数据，格式化，写入相机内参
 def dump_example(n):
+    print('n:',n)
     if n % 200 == 0:
         print('Progress %d/%d....' % (n, data_loader.num_train))
     example = data_loader.get_train_example_with_idx(n)  #{'file_name':, 'image_seq': }的一个字典
@@ -76,9 +78,10 @@ def main():
     with open(args.dump_root + 'depth.txt', 'w') as tf:
 
         imfiles = glob(os.path.join(args.dump_root,'Depth','*.jpg'))
+        imfiles = natsort.natsorted(imfiles)
         # print('imfiles:',imfiles)
         frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
-        # print('frame_ids:',frame_ids)
+        print('frame_ids:',frame_ids)
         for frame in frame_ids:
             tf.write('%s %s\n' % ('Depth', frame))
 

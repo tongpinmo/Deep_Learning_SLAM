@@ -1,4 +1,3 @@
-import gslam as gs
 import numpy as np
 import os
 from PIL import Image
@@ -9,92 +8,94 @@ import scipy.misc
 import tensorflow as tf
 import numpy as np
 
-
-class DeepGSLAM(gs.SLAM):
-    def type(self):
-        return "DeepSLAM";
-    def valid(self):
-        return True;
-    def isDrawable(self):
-        return False;
-    def setSvar(self,var):
-        self.config=var;
-    def setCallback(self,cbk):
-        self.callback=cbk;
-    def get_image(self,fr):
-        image=fr.getImage(0)
-        print("Processing frame ",fr.id(),"time:",fr.timestamp())
-
-        # format of numpy array
-        image_np = np.zeros((image.height(), image.width(), image.channels()), np.uint8)
-
-        for i in range(image.height()):
-            for j in range(image.width()):
-               id_b = i*image.width()*image.channels() + j*image.channels()
-               image_np[i,j,0] = image.data(id_b+2)
-               image_np[i,j,1] = image.data(id_b+1)
-               image_np[i,j,2] = image.data(id_b)
+from gslam import *
+import time
 
 
-        #fr.setImage(0,depth)
-        return image_np
-
-class GObjectHandle(gs.GObjectHandle):
-    def handle(self,obj):
-        print("Pose_getslam:",obj.getPose())
+def showStringMsg(obj):
+    print("object is ", obj)
 
 
-slam = DeepGSLAM()
-dataset = gs.Dataset()
-dataset.open("/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg1_360/.tumrgbd")
-
-callback = GObjectHandle()
-slam.setCallback(callback)
-fr = dataset.grabFrame()
-
-sequence_len = 3
-index_img = 0
-seq_img = [0, 0, 0]
+def showStatus(status):
+    print("Status:", status)
 
 
+class DeepSLAM:
+    def init(self, config):
+        self.messenger = Messenger()
+        self.messenger.subscribe(MapFrame, "images", 0, self.handleFrame)
+        self.pubCurframe = self.messenger.advertise(MapFrame, "deep/curframe", 1, False)
+        self.pubImage = self.messenger.advertise(GImage, "deep/curImage", 1, False)
+        self.pubMap = self.messenger.advertise(Map, "deep/map", 1, False)
+        self.map = HashMap()
+        self.imgSeq = [0,0,0]
+        self.times = [0,0,0]
+        self.lastPose = SE3()
+        self.index = 0
+        self.index_img = 0
+        self.indicate = 0
 
-#continuous frames as input
+        return self.messenger
 
-indicate = 0
-index = 0
-index_img = 0
-times = [0,0,0]
+    def SE3Pose(self,p):
+        return SE3(SO3(p[4],p[5],p[6],p[7]),Point3d(p[1],p[2],p[3]))
 
-while (fr):
-    seq_img[index_img] = slam.get_image(fr)
-    # print('index_img:', index_img)
-    times[index_img] = fr.timestamp()
-    # print('fr.timestamp:',times)
-    index_img = index_img + 1
-    # print('index_img:', index_img)
-    index = index + 1
-    print('index:',index)
-    if index >= sequence_len:
-        index_img = 0
-        if indicate > 0:
-            # set the new frame in the seq_img[0],new timestamp in time[0]
-            seq_img[0], seq_img[1], seq_img[2] = seq_img[1], seq_img[2], seq_img[0]
-            times[0],times[1],times[2] = times[1],times[2],times[0]
+    def handleFrame(self, fr):
 
+        image = fr.getImage(0)
+        print("Processing frame ", fr.id(), "time:", fr.timestamp())
 
-        # call the pose function
-        pose = get_pose(seq_img,times,fr.id())
-        print('pose_final:',pose)
-        indicate = 1
-    #
-    # fr.setPose(gs.SE3(tx, ty, tz, qx, qy, qz, qw))
-    # self.callback.handle(fr)
+        imgnp = np.array(image,copy = False)
+        print('imgnp.shape:',imgnp.shape)      #shape(480,640,3)
 
+        self.imgSeq[self.index_img] = imgnp
+        self.times[self.index_img] = fr.timestamp()
 
-    fr = dataset.grabFrame()
-
+        # print('self.imgSeq:',self.imgSeq[self.index_img])
+        print('self.index_img:',self.index_img)
+        print('self.index:',self.index)
 
 
+        self.index_img = self.index_img + 1
+        self.index = self.index + 1
+
+
+        if (self.index >= 3):
+            self.index_img = 0
+
+            if self.indicate > 0:
+                self.imgSeq[0], self.imgSeq[1], self.imgSeq[2] = self.imgSeq[1],self.imgSeq[2],self.imgSeq[0]
+                # print('len of self.imgSeq2:', len(self.imgSeq))
+                self.times[0],self.times[1],self.times[2]  = self.times[1],self.times[2],self.times[0]
+                print('self.times:', self.times)
+
+            pose=get_pose(self.imgSeq, self.times, fr.id())
+            print('pose:', pose)
+            self.indicate = 1
+            fr.setPose(self.SE3Pose(pose))
+
+
+        self.map.insertMapFrame(fr)
+        self.pubCurframe.publish(fr)
+        self.pubImage.publish(image)
+        self.pubMap.publish(self.map)
+
+
+msg = Messenger.singleton()
+svar = Svar.singleton()
+
+# svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_sitting_halfsphere/.tumrgbd")
+svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg1_360/.tumrgbd")
+
+
+slam = DeepSLAM()
+msg.accept(slam.init(svar))
+
+qviz = Application.create("qviz")
+qviz.init(svar).accept(msg)
+
+while not svar.getInt("ShouldStop"):
+    time.sleep(0.1)
 
 
 

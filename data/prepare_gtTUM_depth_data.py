@@ -8,11 +8,12 @@ import numpy as np
 from glob import glob
 from joblib import Parallel, delayed
 import os
+import natsort
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
 parser.add_argument("--dataset_name", type=str, default='kitti_raw_TUM', choices=["kitti_raw_eigen", "kitti_raw_TUM", "kitti_odom"])
-parser.add_argument("--dump_root", type=str, default='resulting/formatted/data_TUM/ ', help="Where to dump the data")
+parser.add_argument("--dump_root", type=str, default='resulting/formatted/data_TUM/', help="Where to dump the data")
 parser.add_argument("--seq_length", type=int, default=3, help="Length of each training sequence")
 parser.add_argument("--img_height", type=int, default=128, help="image height")
 parser.add_argument("--img_width", type=int, default=416, help="image width")
@@ -29,14 +30,13 @@ def concat_image_seq(seq):
 
 # 将格式化的连续三帧depth写入到文件夹depth里面
 def dump_example(n):
-    if n % 200 == 0:
+    if n % 100 == 0:
         print('Progress %d/%d....' % (n, data_loader.num_train))
     example = data_loader.get_train_example_with_idx(n)  #{'file_name':, 'image_seq': }的一个字典
     # print('example:',example)
     if example == False:
         return
     image_seq = concat_image_seq(example['image_seq'])
-
     dump_dir = os.path.join(args.dump_root, example['folder_name'])  #dump_root=resulting/formatted/data_TUM/depth --seq_length=3
     # print('dump_dir:',dump_dir)
     # if not os.path.isdir(dump_dir):
@@ -68,6 +68,7 @@ def main():
 
 
 
+
     Parallel(n_jobs=args.num_threads)(delayed(dump_example)(n) for n in range(data_loader.num_train))
 
     # Split into depth
@@ -78,6 +79,7 @@ def main():
     with open(args.dump_root + 'depth.txt', 'w') as tf:
 
         imfiles = glob(os.path.join(args.dump_root,'depth','*.jpg'))
+        imfiles = natsort.natsorted(imfiles)
         # print('imfiles:',imfiles)
         frame_ids = [os.path.basename(fi)[:-4] for fi in imfiles]
         # print('frame_ids:',frame_ids)

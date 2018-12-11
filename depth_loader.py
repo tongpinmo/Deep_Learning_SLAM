@@ -9,8 +9,8 @@ import tensorflow as tf
 class DepthLoader(object):
     #_init_是python class中的构造函数,初始化实例的值
     def __init__(self,
-                 # dataset_dir='resulting/formatted/data/',
-                 dataset_dir='resulting/formatted/data_TUM/',
+                 dataset_dir='resulting/formatted/data_NYU',
+                 # dataset_dir='resulting/formatted/data_TUM',
                  batch_size = 4,
                  img_height = 128,
                  img_width  = 416,
@@ -30,8 +30,8 @@ class DepthLoader(object):
         seed = random.randint(0, 2**31 - 1)  #integer creating in a particular scope
         # Load the list of training files into queues
 
-        file_list = self.format_file_list(self.dataset_dir, 'depth') #读取resulting/formatted/data/Depth 下面的.jpg
-        # print('file_list:',file_list)
+        file_list = self.format_file_list(self.dataset_dir, 'depth') #读取resulting/formatted/data_/  下面的depth.txt文件
+        # print('depth_file_list:',file_list)
         image_paths_queue = tf.train.string_input_producer(
             file_list['image_file_list'],
             seed=seed,

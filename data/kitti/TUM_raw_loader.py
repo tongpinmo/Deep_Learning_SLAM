@@ -74,7 +74,7 @@ class TUM_raw_loader(object):
             # print('curr_drive:',curr_drive,'curr_frame_id:',curr_frame_id)
             curr_img = self.load_image_raw(curr_drive, curr_frame_id)
             # print ('curr_img.shape:',curr_img.shape)             #(480, 640, 3)
-            if o == 0:  #FIXME：求出缩放比例，后面对intrinsics使用
+            if o == 0:  #求出缩放比例
                 zoom_y = self.img_height/curr_img.shape[0]  #128.0/480=0.266666667
                 # print('zoom_y',zoom_y)
                 zoom_x = self.img_width/curr_img.shape[1]   #416.0/640=0.65
@@ -87,6 +87,7 @@ class TUM_raw_loader(object):
     def load_example(self, frames, tgt_idx):
         image_seq, zoom_x, zoom_y = self.load_image_sequence(frames, tgt_idx, self.seq_length)
         # print('image_seq:',image_seq)                       #FIXME：此处将连续三帧ndarray读入一个list
+        # print('tgt_idx:',tgt_idx)
         tgt_drive    = frames[tgt_idx].strip().split('/')[0]
         tgt_frame_id = frames[tgt_idx].strip().split('/')[1][:-4]
         # print('tgt_drive',tgt_drive,'tgt_frame_id',tgt_frame_id)

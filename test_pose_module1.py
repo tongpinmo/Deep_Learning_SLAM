@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import functools
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 1, "The size  of a sample batch")
+flags.DEFINE_integer("batch_size", 1, "The size of a sample batch")
 flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
 flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
@@ -41,7 +41,7 @@ saver.restore(sess, FLAGS.ckpt_file)
 # with tf.Session() as sess:
 #     saver.restore(sess, FLAGS.ckpt_file)
 
-def get_pose(img,index,times):
+def get_pose(img,times,index):
 
     max_src_offset = (FLAGS.seq_length - 1)//2   #1
 

@@ -5,9 +5,10 @@ from __future__ import division
 import argparse
 import scipy.misc
 import numpy as np
-from glob import glob
+import glob
 from joblib import Parallel, delayed
 import os
+import natsort
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
@@ -29,6 +30,7 @@ def concat_image_seq(seq):
 
 # 读入raw_data_KITTI文件夹数据，格式化，写入相机内参
 def dump_example(n):
+    # print('n:',n)
     if n % 200 == 0:
         print('Progress %d/%d....' % (n, data_loader.num_train))
     example = data_loader.get_train_example_with_idx(n)  #{'file_name':, 'image_seq': }的一个字典
@@ -41,7 +43,7 @@ def dump_example(n):
     fy = intrinsics[1, 1]
     cx = intrinsics[0, 2]
     cy = intrinsics[1, 2]
-    dump_dir = os.path.join(args.dump_root, example['folder_name'])  #dump_root=resulting/formatted/data/ --seq_length=3
+    dump_dir = os.path.join(args.dump_root, example['folder_name'])  #dump_dir=resulting/formatted/data_NYU/Images --seq_length=3
     # print('dump_dir:',dump_dir)
     # if not os.path.isdir(dump_dir):
     #     os.makedirs(dump_dir, exist_ok=True)
@@ -64,12 +66,6 @@ def main():
         os.makedirs(args.dump_root)
 
     global data_loader  #为一个定义在函数外的变量赋值，该变量名是全局的
-    if args.dataset_name == 'kitti_odom':
-        from kitti.kitti_odom_loader import kitti_odom_loader
-        data_loader = kitti_odom_loader(args.dataset_dir,
-                                        img_height=args.img_height,
-                                        img_width=args.img_width,
-                                        seq_length=args.seq_length)
 
     if args.dataset_name == 'kitti_raw_eigen':   #执行这个
         from kitti.kitti_raw_loader import kitti_raw_loader
@@ -78,17 +74,10 @@ def main():
                                        img_height=args.img_height,
                                        img_width=args.img_width,
                                        seq_length=args.seq_length)
-
-    if args.dataset_name == 'kitti_raw_stereo':
-        from kitti.kitti_raw_loader import kitti_raw_loader
-        data_loader = kitti_raw_loader(args.dataset_dir,
-                                       split='stereo',
-                                       img_height=args.img_height,
-                                       img_width=args.img_width,
-                                        seq_length=args.seq_length)
-
+#并行joblib.Parallel()
 
     Parallel(n_jobs=args.num_threads)(delayed(dump_example)(n) for n in range(data_loader.num_train))
+
 
     # Split into train/val
     np.random.seed(8964)
@@ -96,8 +85,11 @@ def main():
     # print('subfolders:',subfolders)
     # 路径/resulting /formatted /data/
     with open(args.dump_root + 'train.txt', 'w') as tf:
-        imfiles = glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
+        imfiles = glob.glob(os.path.join(args.dump_root, 'Images', '*.jpg'))
+        imfiles = natsort.natsorted(imfiles)
+        print('imfiles:',imfiles)
         frame_ids = [os.path.basename(fi).split('.')[0] for fi in imfiles]
+        print('frame_ids:',frame_ids)
         for frame in frame_ids:
             tf.write('%s %s\n' % ('Images', frame))
 
