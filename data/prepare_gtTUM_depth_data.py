@@ -11,7 +11,7 @@ import os
 import natsort
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset_dir", type=str, default='raw_data_NYU', help="where the dataset is stored")
+parser.add_argument("--dataset_dir", type=str, default='RGBD/rgbd_dataset_freiburg1_360', help="where the dataset is stored")
 parser.add_argument("--dataset_name", type=str, default='kitti_raw_TUM', choices=["kitti_raw_eigen", "kitti_raw_TUM", "kitti_odom"])
 parser.add_argument("--dump_root", type=str, default='resulting/formatted/data_TUM/', help="Where to dump the data")
 parser.add_argument("--seq_length", type=int, default=3, help="Length of each training sequence")

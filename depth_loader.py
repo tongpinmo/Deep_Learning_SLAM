@@ -9,8 +9,8 @@ import tensorflow as tf
 class DepthLoader(object):
     #_init_是python class中的构造函数,初始化实例的值
     def __init__(self,
-                 dataset_dir='resulting/formatted/data_NYU',
-                 # dataset_dir='resulting/formatted/data_TUM',
+                 # dataset_dir='resulting/formatted/data_NYU',
+                 dataset_dir='resulting/formatted/data_TUM',
                  batch_size = 4,
                  img_height = 128,
                  img_width  = 416,
@@ -30,7 +30,7 @@ class DepthLoader(object):
         seed = random.randint(0, 2**31 - 1)  #integer creating in a particular scope
         # Load the list of training files into queues
 
-        file_list = self.format_file_list(self.dataset_dir, 'depth') #读取resulting/formatted/data_/  下面的depth.txt文件
+        file_list = self.format_file_list(self.dataset_dir, 'depth') #按顺序依次读取resulting/formatted/data_/ 下面的depth.txt文件
         # print('depth_file_list:',file_list)
         image_paths_queue = tf.train.string_input_producer(
             file_list['image_file_list'],
@@ -38,6 +38,7 @@ class DepthLoader(object):
             shuffle=True)   #True stands for random sequences
         self.steps_per_epoch = int(
             len(file_list['image_file_list'])//self.batch_size)
+        # print('self.steps_per_epoch:',self.steps_per_epoch)
 
         # Load images
         img_reader = tf.WholeFileReader() #reader
@@ -109,7 +110,7 @@ class DepthLoader(object):
     def format_file_list(self, data_root, split):
         with open(data_root + '/%s.txt' % split, 'r') as f: #打开 resulting/formatted/data/depth.txt
              frames=f.readlines()
-        subfolders = [x.split(' ')[0] for x in frames]
+        subfolders = [x.split(' ')[0] for x in frames]              # depth
         frame_ids = [x.split(' ')[1][:-1] for x in frames]          #[:-1]操作去掉'\n'
         # print('frame_ids;',frame_ids)
         image_file_list = [os.path.join(data_root, subfolders[i],
@@ -148,34 +149,7 @@ class DepthLoader(object):
         src_image_stack.set_shape([img_height,
                                    img_width,
                                    num_source * 1])  # 此处乘以３是因为每张图片都是[image_height,image_width,1],在axis=2上连接，就是6,因此 shape(128,416,2)
-        # print('src_image_stack.set_shape', src_image_stack.shape)     #(128,416,6)
-        tgt_image.set_shape([img_height, img_width, 1])   #shape(128,416,3)
+        # print('src_image_stack.set_shape', src_image_stack.shape)     #(128,416,2)
+        tgt_image.set_shape([img_height, img_width, 1])   #shape(128,416,1)
         return tgt_image, src_image_stack
-
-#FIXME:
-    def batch_unpack_image_sequence(self, image_seq, img_height, img_width, num_source):
-        # Assuming the center image is the target frame
-        tgt_start_idx = int(img_width * (num_source//2))
-        tgt_image = tf.slice(image_seq,  # shape(1,128,416,3)
-                             [0, 0, tgt_start_idx, 0],
-                             [-1, -1, img_width, -1])
-        # Source frames before the target frame
-        src_image_1 = tf.slice(image_seq,  # shape(1,128,832,3)
-                               [0, 0, 0, 0],
-                               [-1, -1, int(img_width * (num_source//2)), -1])
-        # Source frames after the target frame
-        src_image_2 = tf.slice(image_seq,  # # shape(1,128,832,3)
-                               [0, 0, int(tgt_start_idx + img_width), 0],
-                               [-1, -1, int(img_width * (num_source//2)), -1])
-        src_image_seq = tf.concat([src_image_1, src_image_2], axis=2)           #  shape(1,128,1664,3)
-        # Stack source frames along the color channels (i.e. [B, H, W, N*3])
-        src_image_stack = tf.concat([tf.slice(src_image_seq,                    #   shape(1,128,416,6)
-                                    [0, 0, i*img_width, 0],
-                                    [-1, -1, img_width, -1])
-                                    for i in range(num_source)], axis=3)
-        return tgt_image, src_image_stack
-
-
-
-
 

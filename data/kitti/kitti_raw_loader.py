@@ -97,9 +97,9 @@ class kitti_raw_loader(object):
         tgt_drive, tgt_frame_id = frames[tgt_idx].split(' ')
         # print('tgt_drive',tgt_drive,'tgt_frame_id',tgt_frame_id)
         intrinsics = self.load_intrinsics_raw(tgt_drive, tgt_frame_id)   #读取 calib_cam_to_cam.txt
-        # print('intrinsics before scale',intrinsics)
+        print('intrinsics before scale',intrinsics)
         intrinsics = self.scale_intrinsics(intrinsics, zoom_x, zoom_y)     # 经过了尺度变换,放入._cam.txt中
-        # print('intrinsics after scale', intrinsics)
+        print('intrinsics after scale', intrinsics)
         example = {}
         example['intrinsics'] = intrinsics
         example['image_seq'] = image_seq

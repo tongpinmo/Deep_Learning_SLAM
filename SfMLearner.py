@@ -15,11 +15,9 @@ from Getdepth import *
 img_height =128
 img_width =416
 
-
-
 class SfMLearner(object):
     def __init__(self):
-        pass   #pass　空语句，什么也不干，保证语义的完整性
+        pass   #pass　
     
     def build_train_graph(self):
         opt = self.opt
@@ -31,8 +29,8 @@ class SfMLearner(object):
                             opt.num_scales)
         with tf.name_scope("data_loading"):
             tgt_image, src_image_stack, intrinsics = loader.load_train_batch()
-            tgt_image = self.preprocess_image(tgt_image)                        # [-1,1) 之间
-            src_image_stack = self.preprocess_image(src_image_stack)            # [-1,1) 之间
+            tgt_image = self.preprocess_image(tgt_image)                        # [-1,1)
+            src_image_stack = self.preprocess_image(src_image_stack)            # [-1,1)
             # tgt_image = tf.Print(tgt_image,[tgt_image],message= 'tgt_image')  #(4,128,416,3)
             # src_image_stack = tf.Print(src_image_stack, [src_image_stack], message='src_image_stack')     #(4,128,416,6)
             # # print('intrinsics:',intrinsics)                                   #shape(4,4,3,3)
@@ -49,7 +47,7 @@ class SfMLearner(object):
             print('pred_disp:',pred_disp)
 
 
-            pred_depth = [1./pred_disp]   # 逆深度
+            pred_depth = [1./pred_disp]   # inverse depth
             # pred_depth = tf.Print(pred_depth,[pred_depth],message='pred_depth')
             print('pred_depth:',pred_depth)
 
@@ -91,7 +89,7 @@ class SfMLearner(object):
                 curr_proj_image = projective_inverse_warp(
                     curr_src_image_stack[:,:,:,3*i:3*(i+1)],                #shape(4,128,416,3)
                     tf.squeeze(pred_depth[s], axis=3),                      #shape(4,128,416)
-                    pred_poses[:,i,:],                                      #pred_poses.shape(4,6)  #todo :要改为两帧的话可以从这里下手
+                    pred_poses[:,i,:],                                      #pred_poses.shape(4,6)
                     intrinsics[:,s,:,:])                                    #shape(4,4,3,3)
                 curr_proj_error = tf.abs(curr_proj_image - curr_tgt_image)  #投影光度误差
                 # print('curr_proj_error.shape:',curr_proj_error.shape)
@@ -100,7 +98,7 @@ class SfMLearner(object):
                 if opt.explain_reg_weight > 0:
 
                     curr_exp_logits = tf.slice(pred_exp_logits[s],
-                                               [0, 0, 0, i*2], #从偶数个开始
+                                               [0, 0, 0, i*2],
                                                [-1, -1, -1, 2])
                     with tf.Session() as sess:
                         test_curr_exp_logits=sess.run(curr_exp_logits)
@@ -124,7 +122,7 @@ class SfMLearner(object):
                     # print('proj_error_stack.shape:', proj_error_stack.shape)
                     if opt.explain_reg_weight > 0:
                         exp_mask_stack = tf.expand_dims(curr_exp[:,:,:,1], -1)
-                else: #FIXME:此处对于i=1为什么要进行concat?
+                else:
                     proj_image_stack = tf.concat([proj_image_stack,
                                                   curr_proj_image], axis=3)
                     # print('proj_image_stack.shape:',proj_image_stack.shape)
@@ -167,7 +165,7 @@ class SfMLearner(object):
         self.proj_image_stack_all = proj_image_stack_all
         self.proj_error_stack_all = proj_error_stack_all
         self.exp_mask_stack_all = exp_mask_stack_all
-#FIXME：这个函数根据不同的scale ，生成不同scale的初始化mask
+
     def get_reference_explain_mask(self, downscaling):
         opt = self.opt
         tmp = np.array([0,1])
@@ -182,12 +180,12 @@ class SfMLearner(object):
     def compute_exp_reg_loss(self, pred, ref):
         l = tf.nn.softmax_cross_entropy_with_logits(
             labels=tf.reshape(ref, [-1, 2]),
-            logits=tf.reshape(pred, [-1, 2]))  # 进行sotfmax运算,0,1 class
-        return tf.reduce_mean(l)   #对向量求均值，计算loss
+            logits=tf.reshape(pred, [-1, 2]))
+        return tf.reduce_mean(l)
 
 
     def train(self, opt):
-        opt.num_source = opt.seq_length - 1    #seq_length=3 已定,source_view=2 and target_view=1
+        opt.num_source = opt.seq_length - 1    #seq_length=3 ,source_view=2 and target_view=1
         # TODO: currently fixed to 4
         opt.num_scales = 4
         self.opt = opt
@@ -226,7 +224,6 @@ class SfMLearner(object):
                 if step % opt.summary_freq == 0:
                     fetches["loss"] = self.total_loss
                     fetches["summary"] = sv.summary_op
-
                 results = sess.run(fetches)
                 gs = results["global_step"]
 
@@ -270,14 +267,14 @@ class SfMLearner(object):
         # Assuming input image is uint8
         # print('image uint8: ', image)
         # image = tf.Print(image, [image], "image uint8: ")
-        image = tf.image.convert_image_dtype(image, dtype=tf.float32)  #转化为[0,1)的float
+        image = tf.image.convert_image_dtype(image, dtype=tf.float32)  #[0,1)的float
         # image = tf.Print(image, [image], "image float32: ")
-        return image * 2. -1.  #扩大范围,(-1,1)
+        return image * 2. -1.  #(-1,1)
 
     def deprocess_image(self, image):
         # Assuming input image is float32
-        image = (image + 1.)/2.   #float32到uint8,返回的时候要反过来.
-        return tf.image.convert_image_dtype(image, dtype=tf.uint8) #调整回uint8正常显示
+        image = (image + 1.)/2.   #float32 to uint8
+        return tf.image.convert_image_dtype(image, dtype=tf.uint8) #uint8
 
     def setup_inference(self, 
                         img_height,
@@ -293,10 +290,10 @@ class SfMLearner(object):
             self.build_depth_test_graph()
         if self.mode == 'pose':
             self.seq_length = seq_length
-            self.num_source = seq_length - 1    #num_source = 2 此处输出的pose vector就是Num_source个
+            self.num_source = seq_length - 1
             self.build_pose_test_graph()
 
-    def inference(self, inputs, sess, mode='depth'):  #inference
+    def inference(self, inputs, sess, mode='depth'):
         fetches = {}
 
         if mode == 'depth':

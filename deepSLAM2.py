@@ -27,7 +27,9 @@ class DeepSLAM:
         self.pubCurframe = self.messenger.advertise(MapFrame, "deep/curframe", 1, False)
         self.pubImage = self.messenger.advertise(GImage, "deep/curImage", 1, False)
         self.pubMap = self.messenger.advertise(Map, "deep/map", 1, False)
+        self.pubGround = self.messenger.advertise(Map, "ground/map", 1, False)
         self.map = HashMap()
+        self.ground = HashMap()
         self.imgSeq = [0,0,0]
         self.times = [0,0,0]
         self.lastPose = SE3()
@@ -41,6 +43,9 @@ class DeepSLAM:
         return SE3(SO3(p[4],p[5],p[6],p[7]),Point3d(p[1],p[2],p[3]))
 
     def handleFrame(self, fr):
+        ground=MapFrame(fr.id(), fr.timestamp())
+        ground.setPose(fr.getPose())
+        self.ground.insertMapFrame(ground)
 
         image = fr.getImage(0)
         print("Processing frame ", fr.id(), "time:", fr.timestamp())
@@ -79,19 +84,25 @@ class DeepSLAM:
         self.pubCurframe.publish(fr)
         self.pubImage.publish(image)
         self.pubMap.publish(self.map)
+        self.pubGround.publish(self.ground)
 
 
 msg = Messenger.singleton()
+print(msg)
 svar = Svar.singleton()
 
-# svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_sitting_halfsphere/.tumrgbd")
-svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg1_360/.tumrgbd")
-
+# svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg1_desk2/.tumrgbd")
+svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_nostructure_texture_near_withloop/.tumrgbd")
+# svar.parseLine("Dataset=/mnt/PI_Lab/users/zhaoyong/Dataset/TUM/RGBD/rgbd_dataset_freiburg3_long_office_household/.tumrgbd")
 
 slam = DeepSLAM()
 msg.accept(slam.init(svar))
+print(svar)
+print(msg)
 
 qviz = Application.create("qviz")
+print(type(qviz))
+
 qviz.init(svar).accept(msg)
 
 while not svar.getInt("ShouldStop"):

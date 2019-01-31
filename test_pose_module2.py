@@ -19,7 +19,7 @@ flags.DEFINE_integer("batch_size", 1, "The size  of a sample batch")
 flags.DEFINE_integer("img_height", 128, "Image height")
 flags.DEFINE_integer("img_width", 416, "Image width")
 flags.DEFINE_integer("seq_length",3, "Sequence length for each example")
-flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-199500', "checkpoint file")
+flags.DEFINE_string("ckpt_file", 'checkpoints_NYU/model-198360', "checkpoint file")
 flags.DEFINE_string("output_dir", 'deepSLAMpose_output/', "Output directory")
 FLAGS = flags.FLAGS
 
@@ -98,7 +98,7 @@ def gen_TUM_format_pose(poses, index):
         global  this_pose
         this_pose = Tmat
 
-        pose_final = poses[1]
+        pose_final = poses[0]
         # print('pose_final', pose_final)
 
         return pose_final
@@ -167,7 +167,7 @@ def dump_pose_seq_TUM(pred_poses,times):
     poses = []
     for p in range(len(times)):
         this_pose = pose_vec_to_mat(pred_poses[p])
-        this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #FIXME：change other frame into t-1 base
+        this_pose = np.dot(first_pose, np.linalg.inv(this_pose))                  #change other frame into t-1 base
         tx = this_pose[0, 3]
         ty = this_pose[1, 3]
         tz = this_pose[2, 3]

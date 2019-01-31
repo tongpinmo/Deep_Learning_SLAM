@@ -6,7 +6,6 @@ import random
 import tensorflow as tf
 
 class DataLoader(object):
-    #_init_是python class中的构造函数,初始化实例的值
     def __init__(self, 
                  dataset_dir=None, 
                  batch_size=None,
@@ -26,7 +25,7 @@ class DataLoader(object):
         """
         seed = random.randint(0, 2**31 - 1)  #integer creating in a particular scope
         # Load the list of training files into queues
-        file_list = self.format_file_list(self.dataset_dir, 'train') #读取resulting/formatted/data 下面的train.txt
+        file_list = self.format_file_list(self.dataset_dir, 'train') #read resulting/formatted/data train.txt
         # print('train_file_list:',file_list)
         image_paths_queue = tf.train.string_input_producer(
             file_list['image_file_list'], 
@@ -42,8 +41,8 @@ class DataLoader(object):
 
         # Load images
         img_reader = tf.WholeFileReader() #reader
-        _, image_contents = img_reader.read(image_paths_queue) #reader读取序列
-        image_seq = tf.image.decode_jpeg(image_contents)       #解码，tensor
+        _, image_contents = img_reader.read(image_paths_queue) #reader
+        image_seq = tf.image.decode_jpeg(image_contents)       #tensor
         tgt_image, src_image_stack = \
             self.unpack_image_sequence(
                 image_seq, self.img_height, self.img_width, self.num_source)
@@ -52,7 +51,7 @@ class DataLoader(object):
         # print('src_image_stack',src_image_stack.shape)          # shape=(128, 416, 6)
 
         # Load camera intrinsics
-        cam_reader = tf.TextLineReader()  #从cam.txt中读取，每次读取一行，tf.decode_csv对每一行进行解析.
+        cam_reader = tf.TextLineReader()
         _, raw_cam_contents = cam_reader.read(cam_paths_queue)
         rec_def = []
         for i in range(9):
@@ -62,7 +61,7 @@ class DataLoader(object):
         raw_cam_vec = tf.stack(raw_cam_vec)
         # raw_cam_vec = tf.Print(raw_cam_vec,[raw_cam_vec],message='raw_cam_vec')       shape(9,)
         intrinsics = tf.reshape(raw_cam_vec, [3, 3])
-        # intrinsics = tf.Print(intrinsics,[intrinsics],message='intrinsics before train.batch:')  #scale变换之后的  (3,3)
+        # intrinsics = tf.Print(intrinsics,[intrinsics],message='intrinsics before train.batch:')  #scale  (3,3)
         # print('intrinsics:',intrinsics)
 
         # Form training batches
@@ -88,6 +87,7 @@ class DataLoader(object):
         intrinsics = self.get_multi_scale_intrinsics(                    #tensor shape(4,4,3,3)
             intrinsics, self.num_scales)
         # intrinsics = tf.Print(intrinsics,[intrinsics],message='intrinsics after get_multi_scale:')
+        # print('intrinsics.shape:',intrinsics.shape)
         return tgt_image, src_image_stack, intrinsics
 #生成内参矩阵的函数
     def make_intrinsics_matrix(self, fx, fy, cx, cy):
@@ -105,12 +105,12 @@ class DataLoader(object):
         # Random scaling
         def random_scaling(im, intrinsics):
             batch_size, in_h, in_w, _ = im.get_shape().as_list()
-            scaling = tf.random_uniform([2], 1, 1.15)                   #shape(2,),范围在(1,1.5)之间
+            scaling = tf.random_uniform([2], 1, 1.15)                   #shape(2,),(1,1.5)
             x_scaling = scaling[0]
             y_scaling = scaling[1]
             out_h = tf.cast(in_h * y_scaling, dtype=tf.int32)
             out_w = tf.cast(in_w * x_scaling, dtype=tf.int32)
-            im = tf.image.resize_area(im, [out_h, out_w])               #此处将image尺寸改变了
+            im = tf.image.resize_area(im, [out_h, out_w])
             fx = intrinsics[:,0,0] * x_scaling
             fy = intrinsics[:,1,1] * y_scaling
             cx = intrinsics[:,0,2] * x_scaling
